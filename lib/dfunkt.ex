@@ -10,6 +10,6 @@ defmodule Pls.Dfunkt do
       {:error, _} -> raise Maru.Exceptions.NotFound
     end
 
-    length(json["current_offices"]) > 0
+    length(json["current_offices"]) > 0 && "dfunkt"
   end
 end

@@ -10,4 +10,3 @@ config :pls, Pls.Repo,
 
 config :maru, Pls.API,
   http: [port: System.get_env("PORT") || 5000]
-

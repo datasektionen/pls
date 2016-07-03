@@ -1,5 +1,5 @@
 defmodule Pls.Auth do
-  import Plug.Conn
+  #import Plug.Conn
   import HTTPotion
 
   defmodule Unauthorized do
@@ -34,6 +34,10 @@ defmodule Pls.Auth do
       ["api", "user", _, group]  -> group
       ["api", "group", group]    -> group
       ["api", "group", group, _] -> group
+    end
+
+    if String.ends_with? group, ".dfunkt" do
+      group = String.replace_suffix group, ".dfunkt", ""
     end
 
     unless is_admin?(user, group),  do: raise Unauthorized

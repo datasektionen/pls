@@ -22,11 +22,5 @@ defmodule Pls.Repo.Migrations.CreateDatabase do
       add :group_id, references(:group, on_delete: :delete_all)
       add :name, :string
     end
-
-    create table(:collection) do
-      add :group_id, references(:group, on_delete: :delete_all)
-      add :name, :string
-    end
-
   end
 end

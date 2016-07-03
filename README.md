@@ -15,7 +15,6 @@ iex -S mix
 
 From there you can use the methods defined in Pls.Queries to edit the database.
 
-
 ## Endpoints
 
 ```

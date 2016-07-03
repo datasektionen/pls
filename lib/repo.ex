@@ -31,8 +31,7 @@ defmodule Pls.Repo.Group do
     field :name, :string
     
     has_many :permissions, Pls.Repo.Permission, on_delete: :delete_all
-    has_many :collections, Pls.Repo.Collection, on_delete: :delete_all
-    
+
     many_to_many :members, Pls.Repo.User, join_through: Pls.Repo.Membership, on_delete: :delete_all
   end
 
@@ -56,13 +55,21 @@ defmodule Pls.Repo.Membership do
     field :expiry, Ecto.Date
   end
 
-  def new(user, group, expiry) do
-    user = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^user)
-    group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group)
+  def new(uid, group_name, expiry) do
+    user = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^uid)
+    user = user || Pls.Queries.add_user uid
+    group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
+    group = group || Pls.Queries.add_group group_name
+
+    date = case Ecto.Date.cast expiry do
+      {:ok, date} -> date
+      :error -> raise Maru.Exceptions.Validation
+    end
+
     %Pls.Repo.Membership{
       user: user,
       group: group,
-      expiry: Ecto.Date.cast!(expiry)
+      expiry: date
     }
   end
 end
@@ -79,28 +86,9 @@ defmodule Pls.Repo.Permission do
   end
 
   def new(group_name, permission) do
-    from(g in Pls.Repo.Group, where: g.name == ^group_name)
-    |> Pls.Repo.one
-    |> Ecto.build_assoc(:permissions, %{name: permission})
-  end
-
-end
-
-defmodule Pls.Repo.Collection do
-  use Ecto.Schema
-  import Ecto.Query
-
-  @derive {Poison.Encoder, only: [:name]}
-  schema "collection" do
-    belongs_to :group, Pls.Repo.Group
+    group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
+    group = group || Pls.Queries.add_group group_name
     
-    field :name, :string
+    Ecto.build_assoc(group, :permissions, %{name: permission})
   end
-
-  def new(collection, group_name) do
-    from(g in Pls.Repo.Group, where: g.name == ^group_name)
-    |> Pls.Repo.one
-    |> Ecto.build_assoc(:collections, %{name: collection})
-  end
-
 end

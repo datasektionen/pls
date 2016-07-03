@@ -3,7 +3,6 @@ defmodule Pls.Queries do
 
   def seed do
     add_user "andmarte"
-    add_user "test"
 
     add_group "prometheus"
     add_permission "prometheus", ["post", "sticky", "edit", "delete"]
@@ -24,7 +23,7 @@ defmodule Pls.Queries do
     add_membership "andmarte", "prometheus", {2017, 06, 01}
     add_membership "andmarte", "tv", {2017, 06, 01}
 
-    nil
+    "done"
   end
 
   def permissions_to_names(group) do
@@ -50,13 +49,11 @@ defmodule Pls.Queries do
   end
 
   def user(uid) do
-    collection_groups = case Pls.Dfunkt.is_elected? uid do
+    dfunkt_group = case Pls.Dfunkt.is_elected? uid do
       false -> %{}
-      true -> from(c in Pls.Repo.Collection, 
-        where: c.name == "dfunkt", 
-        preload: [group: :permissions]) 
-        |> Pls.Repo.all 
-        |> Enum.map(fn(x) -> x.group end)
+      group -> Pls.Repo.all from(g in Pls.Repo.Group,
+          where: g.name |> like(^("%." <> group)),
+          preload: :permissions)
     end
 
     from(u in Pls.Repo.User,
@@ -65,7 +62,7 @@ defmodule Pls.Queries do
     |> Pls.Repo.one
     |> (&(if &1 == nil, do: %{}, else: &1)).() # If user isnt found, return an empty map
     |> Map.get(:groups, [])                    # If :groups doesnt exist, return and empty list
-    |> Enum.concat(collection_groups)          # Add the default groups if elected
+    |> Enum.concat(dfunkt_group)               # Add the default groups if elected
     |> Enum.reduce(%{}, fn(group, acc) ->      # make map from group to list of permissions
         Map.put(acc, group.name, group |> permissions_to_names)
       end)
@@ -138,22 +135,9 @@ defmodule Pls.Queries do
 
   def delete_membership(uid, group_name) do
     user = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^uid)
-    user = user || add_user uid
-    
     group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
-    group = group || add_group group_name
 
     delete from(m in Pls.Repo.Membership, where: [user_id:  ^user.id, group_id: ^group.id])
-  end
-
-  def add_to_collection(collection, group_name) do
-    insert Pls.Repo.Collection.new(collection, group_name)
-  end
-
-  def remove_from_collection(collection, group_name) do
-    group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name, select: g.id)
-
-    delete from(c in Pls.Repo.Collection, where: [name: ^collection, group_id: ^group])
   end
 
   def clean do
