@@ -1,31 +1,6 @@
 defmodule Pls.Queries do
   import Ecto.Query
 
-  def seed do
-    add_user "andmarte"
-
-    add_group "prometheus"
-    add_permission "prometheus", ["post", "sticky", "edit", "delete"]
-    add_group "prometheus.dfunkt"
-    add_permission "prometheus.dfunkt", ["post", "edit_own", "delete_own"]
-
-    add_group "tv"
-    add_permission "tv", ["post", "edit", "delete"]
-    add_group "tv.dfunkt"
-    add_permission "tv.dfunkt", ["post_with_expiry", "edit_own", "delete_own"]
-
-    add_group "pls"
-    add_group "pls.tv"
-    add_group "pls.prometheus"
-
-    add_membership "andmarte", "pls", {2017, 06, 01}
-    
-    add_membership "andmarte", "prometheus", {2017, 06, 01}
-    add_membership "andmarte", "tv", {2017, 06, 01}
-
-    "done"
-  end
-
   def permissions_to_names(group) do
     Enum.map(group.permissions, &(&1.name))
   end

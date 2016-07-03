@@ -40,12 +40,12 @@ defmodule Pls.Auth do
       group = String.replace_suffix group, ".dfunkt", ""
     end
 
-    unless is_admin?(user, group),  do: raise Unauthorized
+    unless is_admin?(user, group), do: raise Unauthorized
 
     conn
   end
 
   def is_admin?(user, group) do
-    Pls.Queries.user(user, "pls") or Pls.Queries.user(user, "pls." <> group)
+    Pls.Queries.user(user, "pls") || Pls.Queries.user(user, "pls." <> group)
   end
 end
