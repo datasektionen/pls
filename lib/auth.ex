@@ -1,5 +1,5 @@
 defmodule Pls.Auth do
-  #import Plug.Conn
+  import Plug.Conn
   import HTTPotion
 
   defmodule Unauthorized do
@@ -7,21 +7,26 @@ defmodule Pls.Auth do
   end
 
   def init(options) do
+    if Application.get_env(:pls, :api_key) in ["", nil] do
+      [:red, "Environment variable LOGIN_API_KEY is missing"] |> IO.ANSI.format |> IO.puts
+    end
+
     options
   end
   
   def call(conn, _opts) do
     case {Application.get_env(:pls, :api_key), conn.method} do
-      {nil, _}     -> conn
       {_, "GET"}   -> conn
+      {"", _}      -> conn
+      {nil, _}     -> conn
       {api_key, _} -> conn |> authenticate(api_key)
     end
   end
 
   def authenticate(conn, api_key) do
-    if not Dict.has_key?(conn.query_params, "token"), do: raise Unauthorized
+    if not Dict.has_key?(conn.params, "token"), do: raise Unauthorized
 
-    url = "https://login2.datasektionen.se/verify/" <> conn.query_params["token"]
+    url = "https://login2.datasektionen.se/verify/" <> conn.params["token"]
     res = get(url, query: %{api_key: api_key, format: "json"})
 
     if res.status_code != 200, do: raise Unauthorized
@@ -34,6 +39,7 @@ defmodule Pls.Auth do
       ["api", "user", _, group]  -> group
       ["api", "group", group]    -> group
       ["api", "group", group, _] -> group
+      _ -> raise Maru.Exceptions.MethodNotAllow
     end
 
     if String.ends_with? group, ".dfunkt" do

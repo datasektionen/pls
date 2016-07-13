@@ -13,7 +13,7 @@ defmodule Pls.Repo.Migrations.CreateDatabase do
     create unique_index(:group, [:name])
 
     create table(:membership) do
-      add :user_id, references(:user)
+      add :user_id, references(:user, on_delete: :delete_all)
       add :group_id, references(:group, on_delete: :delete_all)
       add :expiry, :date
     end

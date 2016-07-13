@@ -1,8 +1,58 @@
 defmodule Pls.Queries do
   import Ecto.Query
 
-  def permissions_to_names(group) do
-    Enum.map(group.permissions, &(&1.name))
+  def parse_group(group) do
+    {group.name, Enum.map(group.permissions, &(&1.name))}
+  end
+
+  def user do
+    Pls.Repo.all from(u in Pls.Repo.User, select: u.uid)
+  end
+
+  def user(uid) do
+    dfunkt_group = Pls.Dfunkt.dfunkt_group? uid
+    dfunkt_permissions = from(g in Pls.Repo.Group,
+      where: g.name |> like(^("%." <> dfunkt_group)),
+      preload: :permissions)
+    |> Pls.Repo.all
+    |> Enum.map(&(%{&1 | name: &1.name |> String.split(".") |> Enum.drop(-1) |> Enum.join(".")})) # remove .xxx suffix from name
+
+    from(u in Pls.Repo.User,
+      where: u.uid == ^uid,
+      preload: [groups: :permissions])
+    |> Pls.Repo.all
+    |> Enum.flat_map(&Map.get &1, :groups)
+    |> Enum.concat(dfunkt_permissions)
+    |> Enum.map(&parse_group &1)
+    |> Enum.reduce(%{}, fn({name, permissions}, map) ->
+        Map.update map, name, permissions, &Enum.uniq(Enum.concat &1, permissions)
+      end)
+  end
+
+  def user(uid, group_name) do
+    Map.get user(uid), group_name, false
+  end
+
+  def user(uid, group_name, permission) do
+    permissions = user(uid, group_name)
+    permissions && Enum.member? permissions, permission
+  end
+
+  def group do
+    Pls.Repo.all from(g in Pls.Repo.Group, select: g.name)
+  end
+
+  def group(name) do
+    from(g in Pls.Repo.Group,
+      where: g.name == ^name,
+      preload: :permissions)
+    |> Pls.Repo.all
+    |> Enum.map(&parse_group/1)
+    |> Enum.flat_map(fn({_, permissions}) -> permissions end)
+  end
+
+  def group(name, permission) do
+    Enum.member? group(name), permission
   end
 
   def insert(change) do
@@ -14,61 +64,9 @@ defmodule Pls.Queries do
 
   def delete(query) do
     case Pls.Repo.delete_all query do
-      {res, nil} -> res
+      {res, nil} -> "Removed #{res} row(s)"
       {_, err}   -> err
     end
-  end
-
-  def user do
-    Pls.Repo.all from(u in Pls.Repo.User, select: u.uid)
-  end
-
-  def user(uid) do
-    dfunkt_group = case Pls.Dfunkt.is_elected? uid do
-      false -> %{}
-      group -> Pls.Repo.all from(g in Pls.Repo.Group,
-          where: g.name |> like(^("%." <> group)),
-          preload: :permissions)
-    end
-
-    from(u in Pls.Repo.User,
-      where: u.uid == ^uid,
-      preload: [groups: :permissions])
-    |> Pls.Repo.one
-    |> (&(if &1 == nil, do: %{}, else: &1)).() # If user isnt found, return an empty map
-    |> Map.get(:groups, [])                    # If :groups doesnt exist, return and empty list
-    |> Enum.concat(dfunkt_group)               # Add the default groups if elected
-    |> Enum.reduce(%{}, fn(group, acc) ->      # make map from group to list of permissions
-        Map.put(acc, group.name, group |> permissions_to_names)
-      end)
-  end
-
-  def user(uid, group_name) do
-    Map.get user(uid), group_name, false
-  end
-
-  def user(uid, group_name, permission) do
-    case user(uid, group_name) do
-      false -> false
-      list -> Enum.member? list, permission
-    end
-  end
-
-  def group do
-    Pls.Repo.all from(g in Pls.Repo.Group, select: g.name)
-  end
-
-  def group(name) do
-    from(g in Pls.Repo.Group,
-      where: g.name == ^name,
-      preload: :permissions)
-    |> Pls.Repo.one
-    |> (&(if &1 == nil, do: %{permissions: []}, else: &1)).()
-    |> permissions_to_names
-  end
-
-  def group(name, permission) do
-    Enum.member? group(name), permission
   end
 
   def add_user(uid) do

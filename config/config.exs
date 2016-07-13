@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :pls,
-  api_key: System.get_env("LOGIN_API_KEY") || nil,
+  api_key: System.get_env("LOGIN_API_KEY"),
   ecto_repos: [Pls.Repo]
 
 config :pls, Pls.Repo,
