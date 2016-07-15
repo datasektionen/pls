@@ -52,6 +52,8 @@ defmodule Pls.Auth do
   end
 
   def is_admin?(user, group) do
-    Pls.Queries.user(user, "pls") || Pls.Queries.user(user, "pls." <> group)
+    Pls.Dfunkt.is_admin? user ||
+    Pls.Queries.user(user, "pls") ||
+    Pls.Queries.user(user, "pls." <> group)
   end
 end

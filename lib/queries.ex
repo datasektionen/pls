@@ -10,7 +10,7 @@ defmodule Pls.Queries do
   end
 
   def user(uid) do
-    dfunkt_group = Pls.Dfunkt.dfunkt_group? uid
+    dfunkt_group = Pls.Dfunkt.dfunkt_group uid
     dfunkt_permissions = from(g in Pls.Repo.Group,
       where: g.name |> like(^("%." <> dfunkt_group)),
       preload: :permissions)

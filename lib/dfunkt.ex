@@ -1,11 +1,11 @@
 defmodule Pls.Dfunkt do
   import HTTPotion
 
-  def list_subset(list1, list2) do
+  def list_subset list1, list2 do
     MapSet.subset? MapSet.new(list1), MapSet.new(list2)
   end
 
-  def dfunkt_group?(uid) do
+  def get_offices uid do
     url = "https://dfunkt.datasektionen.se/people/" <> uid
     res = get(url, headers: ["Accept": "application/json"])
 
@@ -14,8 +14,11 @@ defmodule Pls.Dfunkt do
       {:error, _} -> raise Maru.Exceptions.NotFound
     end
 
-    current_offices = json["current_offices"]
+    json["current_offices"]
+  end
 
+  def dfunkt_group uid do
+    current_offices = get_offices uid
     drek_offices = [
       "Ledamot för sociala frågor och relationer",
       "Ledamot för studiemiljöfrågor",
@@ -26,10 +29,25 @@ defmodule Pls.Dfunkt do
       "Vice sektionsordförande"
     ]
 
+    IO.inspect current_offices
+    IO.inspect drek_offices
+    IO.inspect(list_subset current_offices, drek_offices)
+
     cond do
+      length(current_offices) == 0              -> "user"
       list_subset current_offices, drek_offices -> "drek"
-      length(current_offices) > 0               -> "dfunkt"
-      true                                      -> "user"
+      true                                      -> "dfunkt"
     end
+  end
+
+  def is_admin? uid do
+    current_offices = get_offices uid
+    admin_offices = [
+      "Systemansvarig",
+      "Kommunikatör",
+      "Sektionsordförande"
+    ]
+
+    list_subset current_offices, admin_offices
   end
 end
