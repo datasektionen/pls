@@ -11,7 +11,7 @@ defmodule Pls.Dfunkt do
 
     json = case Poison.decode(res.body) do
       {:ok, json} -> json
-      {:error, _} -> raise Maru.Exceptions.NotFound
+      {:error, _} -> %{"current_offices" => []}
     end
 
     json["current_offices"]

@@ -1,5 +1,4 @@
 defmodule Pls.Auth do
-  import Plug.Conn
   import HTTPotion
 
   defmodule Unauthorized do
@@ -42,8 +41,9 @@ defmodule Pls.Auth do
       _ -> raise Maru.Exceptions.MethodNotAllow
     end
 
-    if String.ends_with? group, ".dfunkt" do
-      group = String.replace_suffix group, ".dfunkt", ""
+    group = case String.ends_with? group, ".dfunkt" do
+      true -> String.replace_suffix group, ".dfunkt", ""
+      false -> group
     end
 
     unless is_admin?(user, group), do: raise Unauthorized
