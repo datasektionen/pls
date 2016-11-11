@@ -37,6 +37,7 @@ defmodule Pls.Mixfile do
      {:postgrex,  ">= 0.0.0"},
      {:httpotion, "~> 3.0.0"},
      {:poison,    "~> 1.5"},
-     {:exsync,    "~> 0.1", only: :dev}]
+     {:exsync,    "~> 0.1", only: :dev},
+     {:cors_plug, "~> 1.1"}]
   end
 end

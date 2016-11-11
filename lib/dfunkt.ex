@@ -29,10 +29,6 @@ defmodule Pls.Dfunkt do
       "Vice sektionsordförande"
     ]
 
-    IO.inspect current_offices
-    IO.inspect drek_offices
-    IO.inspect(list_subset current_offices, drek_offices)
-
     cond do
       length(current_offices) == 0              -> "user"
       list_subset current_offices, drek_offices -> "drek"

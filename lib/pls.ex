@@ -14,7 +14,7 @@ defmodule Pls do
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Plss.Supervisor]
+    opts = [strategy: :one_for_one, name: Pls.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
@@ -29,6 +29,8 @@ defmodule Pls.API do
       pass: ["*/*"],
       json_decoder: Poison,
       parsers: [:urlencoded, :json, :multipart]
+
+      plug CORSPlug
 
     plug Pls.Auth
   end

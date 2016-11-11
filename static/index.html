@@ -5,47 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#e83d84" />
     <title>{{ title }} - Datasektionen.se</title>
-    <link rel="stylesheet" href="//aurora.datasektionen.se/" type="text/css" />
-    <link rel="stylesheet" href="/static/css/compiled.css">
-    <script type="text/javascript">
-        window.tbaas_conf = {
-            system_name: "pls",
-            target_id: "tbaas",
-            primary_color: "#ec5f99",
-            secondary_color: "#fff",
-            bar_color: "#e83d84",
-            topbar_items: [
-                { str: "User", href: "/user" },
-                { str: "Group", href: "/group" }
-            ]
+    <script type="text/javascript" src="https://unpkg.com/vue@2.0.3/dist/vue.js"></script>
+    <style type="text/css">
+        button {
+            display: block;
         }
-    </script>
+    </style>
 </head>
 <body>
-    <div id="tbaas"></div>
-    <div id="application">
-        <header>
-            <div class="header-inner">
-                <div class="row">
-                    <div class="header-left col-md-2">
-                    </div>
-                    <div class="col-md-8">
-                        <h2>{{ title }}</h2>
-                    </div>
-                    <div class="header-right col-md-2">
-                        <a href="" class="primary-action"></a>
-                    </div>
-                </div>
-                <div class="clear"></div>
-            </div>
-        </header>
-        <div id="content">
-            <div>
-                                
-            </div>
-        </div>
+    <div id="app">
+        <select name="group" v-model="group">
+            <option v-for="group in groups" :value="group" >{{ group }}</option>
+        </select>
+        <input type="text" placeholder="group" name="group" v-model="newGroup">
+        <button>Create {{ newGroup }}</button>
+        <button>Delete {{ group }}</button>
+
+        <input type="text" placeholder="permission" name="permission" v-model="permission">
+        <button>Add {{ permission }} to {{ group }}</button>
+        <button>Remove {{ permission }} from {{ group }}</button>
+
+        <input type="text" placeholder="user" name="user" v-model="user">
+        <input type="date" placeholder="expiry" name="expiry" v-model="expiry">
+        <button>Add {{ user }} to {{ group }}</button>
+        <button>Remove {{ user }} from {{ group }}</button>
+
     </div>
 
-    <script src="//methone.datasektionen.se"></script>
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#app',
+            data: {
+                newGroup: "",
+                extension: "",
+                groups: [],
+                group: "",
+                user: "",
+                expiry: "",
+                permission: ""
+            },
+            methods: {
+                createGroup: function() {},
+                deleteGroup: function() {},
+                addPermission: function() {},
+                removePermission: function() {},
+                addUser: function() {},
+                removeUser: function() {}
+            },
+            created: function() {
+                fetch('/api/group')
+                    .then(res => res.json())
+                    .then(res => this.groups = res)
+            }
+        });
+    </script>
 </body>
 </html>

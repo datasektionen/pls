@@ -43,12 +43,15 @@ defmodule Pls.Queries do
   end
 
   def group(name) do
-    from(g in Pls.Repo.Group,
+    group = from(g in Pls.Repo.Group,
       where: g.name == ^name,
-      preload: :permissions)
-    |> Pls.Repo.all
-    |> Enum.map(&parse_group/1)
-    |> Enum.flat_map(fn({_, permissions}) -> permissions end)
+      preload: [:permissions, :members])
+    |> Pls.Repo.one
+
+    %{
+        permissions: Enum.map(group.permissions, &(&1.name)),
+        members: Enum.map(group.members, &(&1.uid))
+      }
   end
 
   def group(name, permission) do
