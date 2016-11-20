@@ -19,7 +19,7 @@ defmodule Pls.API.Group do
         requires :group, type: String
       end
       post do
-        conn |> json(Pls.Queries.add_group params.group)
+        conn |> json(Pls.Queries.add_group(URI.decode_www_form(params.group)))
       end
 
       desc "handles DELETE /:group"

@@ -5,8 +5,6 @@ defmodule Pls.Admin do
   end
 
   def call(conn, _opts) do
-    IO.inspect conn
-
     host = get_req_header(conn, "host")
     callback = "#{conn.scheme}://#{host}/?token="
     url  = "https://login2.datasektionen.se/login?callback=#{URI.encode_www_form callback}"
