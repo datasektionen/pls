@@ -3,40 +3,27 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#e83d84" />
+    <meta name="theme-color" content="#0097a7" />
     <title>Pls - third time's the charm</title>
     <script type="text/javascript" src="https://unpkg.com/vue@2.0.3/dist/vue.js"></script>
-    <link rel="stylesheet" href="//aurora.datasektionen.se/" type="text/css" />
-    <style type="text/css">
-        ul > a > li {
-            display: inline-block;
-            padding: 10px;
-            margin: 10px;
-        }
-        li .selected {
-            background: #ddd;
-        }
-        a .remove {
-            color: red;
-        }
-    </style>
+    <link rel="stylesheet" href="https://aurora.datasektionen.se/" type="text/css" />
+    <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript">
-        window.tbaas_conf = {
-            system_name: "pls",
-            target_id: "tbaas",
-            primary_color: "#FF7043",
-            secondary_color: "#fff",
-            bar_color: "#FF5722",
-            topbar_items: [
-                { str: "User", href: "/api/user" },
-                { str: "Group", href: "/api/group" }
-            ]
-        }
+    window.tbaas_conf = {
+        system_name: "pls",
+        target_id: "tbaas",
+        primary_color: "#00838f",
+        secondary_color: "#fff",
+        bar_color: "#0097a7",
+        topbar_items: [
+            { str: "Hem", href: "/" }
+        ]
+    }
     </script>
 </head>
 <body>
     <div id="tbaas"></div>
-    <div id="application" class="deep-orange">
+    <div id="application" class="cyan">
         <header>
             <div class="header-inner">
                 <div class="row">
@@ -52,43 +39,56 @@
             </div>
         </header>
         <div id="content">
-            <ul>
-                <a class="button" v-for="g in groups" @click="getGroup(g)">
-                    <li v-bind:class="{ selected: g == group }">
+            <h1>Användargrupper</h1>
+            <div class="select">
+                <select v-model="group">
+                    <option value="">Välj grupp att administrera</option>
+                    <option v-for="g in groups" @value="g">
                         {{ g }}
-                    </li>
-                </a>
-            </ul>
-            <input type="text" placeholder="group..." name="group" v-model="newGroup">
-            <button @click="createGroup">Create</button>
-
+                    </option>
+                </select>
+            </div>
+            <span style="margin: 10px 20px;float:left;">eller...</span>
+            <div class="add">
+                <input type="text" style="" placeholder="skapa en ny." @keyup.enter="createGroup" name="group" v-model="newGroup">
+                <button @click="createGroup">+</button>
+            </div>
+            <div class="clear"></div>
             <div v-if="group">
-                {{ group }}
-                <a href="#" class="remove" @click="deleteGroup(group)">x</a>
+                <h2>Användargrupp: {{ group }} <a href="#" class="close" @click="deleteGroup(group)">Ta bort</a></h2>
+
                 <div class="row">
                     <div class="col-md-6">
-                        <input type="text" placeholder="permission..." name="permission" v-model="permission">
-                        <button @click="addPermission">Add</button>
-                        
-                        <ul>
+                        <h3>Rättigheter</h3>
+                        <p>Alla gruppens medlemmar har rättigheterna som visas nedan.</p>
+
+                        <ul class="permissions">
                             <li v-for="permission in permissions">
                                 {{ permission }}
-                                <a href="#" class="remove" @click="removePermission(permission)">x</a>
+                                <a href="#" class="close" @click="removePermission(permission)">x</a>
+                            </li>
+                            <li class="add">
+                                <input type="text" placeholder="Rättighet" name="permission" v-model="permission">
+                                <button @click="addPermission">&plus;</button>
+                                <div class="clear"></div>
                             </li>
                         </ul>
+
                     </div>
 
                     <div class="col-md-6">
-                        <input type="text" placeholder="user..." name="user" v-model="user">
-                        <input type="date" placeholder="expiry" name="expiry" v-model="expiry">
-                        <button @click="addUser" v-bind:disabled="user.length == 0">
-                            Add
-                        </button>
-                        
-                        <ul>
+                        <h3>Användare</h3>
+                        <p>Här visas gruppens medlemmar.</p>
+                        <ul class="permissions">
                             <li v-for="user in users">
                                 {{ user }}
                                 <a href="#" class="remove" @click="removeUser(user)">x</a>
+                            </li>
+                            <li class="add ugly">
+                                <input type="text" placeholder="Användarnamn" @keyup.enter="addUser" name="user" v-model="user">
+                                <input type="date" placeholder="Utgångsdatum" @keyup.enter="addUser" name="expiry" v-model="expiry">
+                                <button @click="addUser" v-bind:disabled="user.length == 0">+</button>
+                                <div class="clear"></div>
                             </li>
                         </ul>
                     </div>
@@ -97,71 +97,71 @@
         </div>
     </div>
 
-    <script src="//methone.datasektionen.se"></script>
+    <script src="https://methone.datasektionen.se"></script>
     <script type="text/javascript">
-        var token = location.search.substr(1).split("=")[1]
-        var app = new Vue({
-            el: '#content',
-            data: {
-                group: "",
-                newGroup: "",
-                groups: [],
-                user: "",
-                expiry: "",
-                users: [],
-                permission: "",
-                permissions: []
+    var token = location.search.substr(1).split("=")[1]
+    var app = new Vue({
+        el: '#content',
+        data: {
+            group: "",
+            newGroup: "",
+            groups: [],
+            user: "",
+            expiry: "",
+            users: [],
+            permission: "",
+            permissions: []
+        },
+        created: function() {
+            this.getGroups()
+        },
+        methods: {
+            apiWrapper: function(url, options) {
+                return fetch(url, Object.assign({}, options, {
+                    headers: {
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(Object.assign({token}, options.body))
+              })).then(res => res.json())
+                .then(res => {
+                    console.log(res)
+                    return Promise.resolve(res)
+                })
             },
-            created: function() {
-                this.getGroups()
+            getGroups: function() {
+                fetch('/api/group')
+                .then(res => res.json())
+                .then(res => {
+                    this.groups = res
+                    if(this.groups.indexOf(this.group) != -1 && this.groups.length)
+                        this.group = this.groups[0]
+                })
+
             },
-            methods: {
-                apiWrapper: function(url, options) {
-                    return fetch(url, Object.assign({}, options, {
-                        headers: {
-                          'Accept': 'application/json',
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(Object.assign({token}, options.body))
-                    })).then(res => res.json())
-                    .then(res => {
-                        console.log(res)
-                        return Promise.resolve(res)
-                    })
-                },
-                getGroups: function() {
-                    fetch('/api/group')
-                        .then(res => res.json())
-                        .then(res => {
-                            this.groups = res
-                            if(this.groups.indexOf(this.group) != -1 && this.groups.length)
-                                this.group = this.groups[0]
-                        })
+            getGroup: function(group) {
+                fetch('/api/group/' + group)
+                .then(res => res.json())
+                .then(res => {
+                    this.group = group
+                    this.users = res.members
+                    this.permissions = res.permissions
+                })
+            },
+            createGroup: function() {
+                var url = `/api/group/${this.newGroup}`
+                var opt = {method: 'POST'}
+                this.apiWrapper(url, opt).then(res => {
+                    if(res.name == this.newGroup)
+                        this.groups.push(this.newGroup)
 
-                },
-                getGroup: function(group) {
-                    fetch('/api/group/' + group)
-                        .then(res => res.json())
-                        .then(res => {
-                            this.group = group
-                            this.users = res.members
-                            this.permissions = res.permissions
-                        })
-                },
-                createGroup: function() {
-                    var url = `/api/group/${this.newGroup}`
-                    var opt = {method: 'POST'}
-                    this.apiWrapper(url, opt).then(res => {
-                        if(res.name == this.newGroup)
-                            this.groups.push(this.newGroup)
-
-                        this.getGroup(this.newGroup)
-                    })
-                },
-                deleteGroup: function(group) {
-                    var url = `/api/group/${group}`
-                    var opt = {method: 'DELETE'}
-                    this.apiWrapper(url, opt).then(res => {
+                    this.getGroup(this.newGroup)
+                })
+            },
+            deleteGroup: function(group) {
+                var url = `/api/group/${group}`
+                var opt = {method: 'DELETE'}
+                this.apiWrapper(url, opt).then(res => {
                         if(res[8] !== '0') // 1 or more rows were removed
                             this.groups.splice(this.groups.indexOf(group), 1)
                         if(this.groups.length)
@@ -169,42 +169,42 @@
                         else
                             this.group = ""
                     })
-                },
-                addPermission: function() {
-                    var url = `/api/group/${this.group}/${this.permission}`
-                    var opt = {method: 'POST'}
-                    this.apiWrapper(url, opt).then(res => {
-                        this.getGroup(this.group)
-                    })
-                },
-                removePermission: function(permission) {
-                    var url = `/api/group/${this.group}/${permission}`
-                    var opt = {method: 'DELETE'}
-                    this.apiWrapper(url, opt).then(res => {
-                        this.getGroup(this.group)
-                    })
-                },
-                addUser: function() {
-                    var url = `/api/user/${this.user}/${this.group}`
-                    var opt = {
-                        method: 'POST',
-                        body: {
-                            expiry: this.expiry
-                        }
+            },
+            addPermission: function() {
+                var url = `/api/group/${this.group}/${this.permission}`
+                var opt = {method: 'POST'}
+                this.apiWrapper(url, opt).then(res => {
+                    this.getGroup(this.group)
+                })
+            },
+            removePermission: function(permission) {
+                var url = `/api/group/${this.group}/${permission}`
+                var opt = {method: 'DELETE'}
+                this.apiWrapper(url, opt).then(res => {
+                    this.getGroup(this.group)
+                })
+            },
+            addUser: function() {
+                var url = `/api/user/${this.user}/${this.group}`
+                var opt = {
+                    method: 'POST',
+                    body: {
+                        expiry: this.expiry
                     }
-                    this.apiWrapper(url, opt).then(res => {
-                        this.getGroup(this.group)
-                    })
-                },
-                removeUser: function(user) {
-                    var url = `/api/user/${user}/${this.group}`
-                    var opt = {method: 'DELETE'}
-                    this.apiWrapper(url, opt).then(res => {
-                        this.getGroup(this.group)
-                    })
                 }
+                this.apiWrapper(url, opt).then(res => {
+                    this.getGroup(this.group)
+                })
+            },
+            removeUser: function(user) {
+                var url = `/api/user/${user}/${this.group}`
+                var opt = {method: 'DELETE'}
+                this.apiWrapper(url, opt).then(res => {
+                    this.getGroup(this.group)
+                })
             }
-        })
-    </script>
+        }
+    })
+</script>
 </body>
 </html>
