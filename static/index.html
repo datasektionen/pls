@@ -41,7 +41,7 @@
         <div id="content">
             <h1>Användargrupper</h1>
             <div class="select">
-                <select v-model="group">
+                <select v-model="group" @change="getGroup">
                     <option value="">Välj grupp att administrera</option>
                     <option v-for="g in groups" @value="g">
                         {{ g }}
@@ -80,7 +80,7 @@
                         <h3>Användare</h3>
                         <p>Här visas gruppens medlemmar.</p>
                         <ul class="permissions">
-                            <li v-for="user in users">
+                            <li v-for="user in members">
                                 {{ user }}
                                 <a href="#" class="remove" @click="removeUser(user)">x</a>
                             </li>
@@ -108,7 +108,7 @@
             groups: [],
             user: "",
             expiry: "",
-            users: [],
+            members: [],
             permission: "",
             permissions: []
         },
@@ -139,12 +139,11 @@
                 })
 
             },
-            getGroup: function(group) {
-                fetch('/api/group/' + group)
+            getGroup: function() {
+                fetch('/api/group/' + this.group)
                 .then(res => res.json())
                 .then(res => {
-                    this.group = group
-                    this.users = res.members
+                    this.members = res.members
                     this.permissions = res.permissions
                 })
             },
