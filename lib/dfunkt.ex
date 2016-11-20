@@ -2,7 +2,7 @@ defmodule Pls.Dfunkt do
   import HTTPotion
 
   def list_subset list1, list2 do
-    MapSet.subset? MapSet.new(list1), MapSet.new(list2)
+    !MapSet.disjoint? MapSet.new(list1), MapSet.new(list2)
   end
 
   def get_offices uid do
