@@ -4,60 +4,207 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#e83d84" />
-    <title>{{ title }} - Datasektionen.se</title>
+    <title>Pls - third time's the charm</title>
     <script type="text/javascript" src="https://unpkg.com/vue@2.0.3/dist/vue.js"></script>
+    <link rel="stylesheet" href="//aurora.datasektionen.se/" type="text/css" />
     <style type="text/css">
-        button {
-            display: block;
+        ul > a > li {
+            display: inline-block;
+            padding: 10px;
+            margin: 10px;
+        }
+        li .selected {
+            background: #ddd;
+        }
+        a .remove {
+            color: red;
         }
     </style>
+    <script type="text/javascript">
+        window.tbaas_conf = {
+            system_name: "pls",
+            target_id: "tbaas",
+            primary_color: "#FF7043",
+            secondary_color: "#fff",
+            bar_color: "#FF5722",
+            topbar_items: [
+                { str: "User", href: "/api/user" },
+                { str: "Group", href: "/api/group" }
+            ]
+        }
+    </script>
 </head>
 <body>
-    <div id="app">
-        <select name="group" v-model="group">
-            <option v-for="group in groups" :value="group" >{{ group }}</option>
-        </select>
-        <input type="text" placeholder="group" name="group" v-model="newGroup">
-        <button>Create {{ newGroup }}</button>
-        <button>Delete {{ group }}</button>
+    <div id="tbaas"></div>
+    <div id="application" class="deep-orange">
+        <header>
+            <div class="header-inner">
+                <div class="row">
+                    <div class="header-left col-md-2">
+                    </div>
+                    <div class="col-md-8">
+                        <h2>Pls</h2>
+                    </div>
+                    <div class="header-right col-md-2">
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </header>
+        <div id="content">
+            <ul>
+                <a class="button" v-for="g in groups" @click="getGroup(g)">
+                    <li v-bind:class="{ selected: g == group }">
+                        {{ g }}
+                    </li>
+                </a>
+            </ul>
+            <input type="text" placeholder="group..." name="group" v-model="newGroup">
+            <button @click="createGroup">Create</button>
 
-        <input type="text" placeholder="permission" name="permission" v-model="permission">
-        <button>Add {{ permission }} to {{ group }}</button>
-        <button>Remove {{ permission }} from {{ group }}</button>
+            <div v-if="group">
+                {{ group }}
+                <a href="#" class="remove" @click="deleteGroup(group)">x</a>
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" placeholder="permission..." name="permission" v-model="permission">
+                        <button @click="addPermission">Add</button>
+                        
+                        <ul>
+                            <li v-for="permission in permissions">
+                                {{ permission }}
+                                <a href="#" class="remove" @click="removePermission(permission)">x</a>
+                            </li>
+                        </ul>
+                    </div>
 
-        <input type="text" placeholder="user" name="user" v-model="user">
-        <input type="date" placeholder="expiry" name="expiry" v-model="expiry">
-        <button>Add {{ user }} to {{ group }}</button>
-        <button>Remove {{ user }} from {{ group }}</button>
-
+                    <div class="col-md-6">
+                        <input type="text" placeholder="user..." name="user" v-model="user">
+                        <input type="date" placeholder="expiry" name="expiry" v-model="expiry">
+                        <button @click="addUser" v-bind:disabled="user.length == 0">
+                            Add
+                        </button>
+                        
+                        <ul>
+                            <li v-for="user in users">
+                                {{ user }}
+                                <a href="#" class="remove" @click="removeUser(user)">x</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="//methone.datasektionen.se"></script>
     <script type="text/javascript">
+        var token = location.search.substr(1).split("=")[1]
         var app = new Vue({
-            el: '#app',
+            el: '#content',
             data: {
-                newGroup: "",
-                extension: "",
-                groups: [],
                 group: "",
+                newGroup: "",
+                groups: [],
                 user: "",
                 expiry: "",
-                permission: ""
-            },
-            methods: {
-                createGroup: function() {},
-                deleteGroup: function() {},
-                addPermission: function() {},
-                removePermission: function() {},
-                addUser: function() {},
-                removeUser: function() {}
+                users: [],
+                permission: "",
+                permissions: []
             },
             created: function() {
-                fetch('/api/group')
-                    .then(res => res.json())
-                    .then(res => this.groups = res)
+                this.getGroups()
+            },
+            methods: {
+                apiWrapper: function(url, options) {
+                    return fetch(url, Object.assign({}, options, {
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(Object.assign({token}, options.body))
+                    })).then(res => res.json())
+                    .then(res => {
+                        console.log(res)
+                        return Promise.resolve(res)
+                    })
+                },
+                getGroups: function() {
+                    fetch('/api/group')
+                        .then(res => res.json())
+                        .then(res => {
+                            this.groups = res
+                            if(this.groups.indexOf(this.group) != -1 && this.groups.length)
+                                this.group = this.groups[0]
+                        })
+
+                },
+                getGroup: function(group) {
+                    fetch('/api/group/' + group)
+                        .then(res => res.json())
+                        .then(res => {
+                            this.group = group
+                            this.users = res.members
+                            this.permissions = res.permissions
+                        })
+                },
+                createGroup: function() {
+                    var url = `/api/group/${this.newGroup}`
+                    var opt = {method: 'POST'}
+                    this.apiWrapper(url, opt).then(res => {
+                        if(res.name == this.newGroup)
+                            this.groups.push(this.newGroup)
+
+                        this.getGroup(this.newGroup)
+                    })
+                },
+                deleteGroup: function(group) {
+                    var url = `/api/group/${group}`
+                    var opt = {method: 'DELETE'}
+                    this.apiWrapper(url, opt).then(res => {
+                        if(res[8] !== '0') // 1 or more rows were removed
+                            this.groups.splice(this.groups.indexOf(group), 1)
+                        if(this.groups.length)
+                            this.getGroup(this.groups[0])
+                        else
+                            this.group = ""
+                    })
+                },
+                addPermission: function() {
+                    var url = `/api/group/${this.group}/${this.permission}`
+                    var opt = {method: 'POST'}
+                    this.apiWrapper(url, opt).then(res => {
+                        this.getGroup(this.group)
+                    })
+                },
+                removePermission: function(permission) {
+                    var url = `/api/group/${this.group}/${permission}`
+                    var opt = {method: 'DELETE'}
+                    this.apiWrapper(url, opt).then(res => {
+                        this.getGroup(this.group)
+                    })
+                },
+                addUser: function() {
+                    var url = `/api/user/${this.user}/${this.group}`
+                    var opt = {
+                        method: 'POST',
+                        body: {
+                            expiry: this.expiry
+                        }
+                    }
+                    this.apiWrapper(url, opt).then(res => {
+                        this.getGroup(this.group)
+                    })
+                },
+                removeUser: function(user) {
+                    var url = `/api/user/${user}/${this.group}`
+                    var opt = {method: 'DELETE'}
+                    this.apiWrapper(url, opt).then(res => {
+                        this.getGroup(this.group)
+                    })
+                }
             }
-        });
+        })
     </script>
 </body>
 </html>

@@ -48,10 +48,13 @@ defmodule Pls.Queries do
       preload: [:permissions, :members])
     |> Pls.Repo.one
 
-    %{
-        permissions: Enum.map(group.permissions, &(&1.name)),
-        members: Enum.map(group.members, &(&1.uid))
-      }
+    case group do 
+      nil -> raise Maru.Exceptions.NotFound
+      _ -> %{
+              permissions: Enum.map(group.permissions, &(&1.name)),
+              members: Enum.map(group.members, &(&1.uid))
+            }
+    end
   end
 
   def group(name, permission) do

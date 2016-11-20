@@ -33,6 +33,7 @@ defmodule Pls.API do
       plug CORSPlug
 
     plug Pls.Auth
+    plug Pls.Admin
   end
 
   namespace :api do
