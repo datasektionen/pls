@@ -2,7 +2,7 @@
 
 ## Database
 
-To initialize the databse run the mix tasks
+To initialize the database run the mix tasks
 ```bash
 mix ecto.create
 mix ecto.migrate
