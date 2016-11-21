@@ -80,9 +80,10 @@
                         <h3>Användare</h3>
                         <p>Här visas gruppens medlemmar.</p>
                         <ul class="permissions">
-                            <li v-for="user in members">
-                                {{ user }}
-                                <a href="#" class="remove" @click="removeUser(user)">x</a>
+                            <li v-for="membership in memberships">
+                                {{ membership.name }}
+                                <a href="#" class="remove" @click="removeUser(membership.name)">x</a>
+                                <span class="expiry">Utgångsdatum: {{ membership.expiry }}</span>
                             </li>
                             <li class="add ugly">
                                 <input type="text" placeholder="Användarnamn" @keyup.enter="addUser" name="user" v-model="user">
@@ -108,7 +109,7 @@
             groups: [],
             user: "",
             expiry: "",
-            members: [],
+            memberships: [],
             permission: "",
             permissions: []
         },
@@ -143,7 +144,7 @@
                 fetch('/api/group/' + this.group)
                 .then(res => res.json())
                 .then(res => {
-                    this.members = res.members
+                    this.memberships = res.memberships
                     this.permissions = res.permissions
                 })
             },

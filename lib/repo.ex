@@ -31,6 +31,7 @@ defmodule Pls.Repo.Group do
     field :name, :string
     
     has_many :permissions, Pls.Repo.Permission, on_delete: :delete_all
+    has_many :memberships, Pls.Repo.Membership, on_delete: :delete_all
 
     many_to_many :members, Pls.Repo.User, join_through: Pls.Repo.Membership, on_delete: :delete_all
   end
@@ -46,6 +47,7 @@ end
 defmodule Pls.Repo.Membership do
   use Ecto.Schema
   import Ecto.Query
+  import Ecto.Changeset
 
   @derive {Poison.Encoder, only: [:expiry]}
   schema "membership" do
@@ -63,14 +65,12 @@ defmodule Pls.Repo.Membership do
 
     date = case Ecto.Date.cast expiry do
       {:ok, date} -> date
-      :error -> raise Maru.Exceptions.Validation
+      :error -> raise Maru.Exceptions.Validation, reason: "Invalid date"
     end
 
-    %Pls.Repo.Membership{
-      user: user,
-      group: group,
-      expiry: date
-    }
+    %Pls.Repo.Membership{}
+    |> cast(%{user_id: user.id, group_id: group.id, expiry: date}, [:user_id, :group_id, :expiry])
+    |> unique_constraint(:membership, name: :membership_user_id_group_id_index)
   end
 end
 

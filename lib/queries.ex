@@ -45,16 +45,15 @@ defmodule Pls.Queries do
   def group(name) do
     group = from(g in Pls.Repo.Group,
       where: g.name == ^name,
-      preload: [:permissions, :members])
+      preload: [:permissions, [memberships: :user]])
     |> Pls.Repo.one
 
-    case group do 
-      nil -> raise Maru.Exceptions.NotFound
-      _ -> %{
-              permissions: Enum.map(group.permissions, &(&1.name)),
-              members: Enum.map(group.members, &(&1.uid))
-            }
-    end
+    if group == nil, do: raise Maru.Exceptions.NotFound
+
+    %{
+        permissions: Enum.map(group.permissions, &(&1.name)),
+        memberships: Enum.map(group.memberships, &(%{name: &1.user.uid, expiry: &1.expiry}))
+    }
   end
 
   def group(name, permission) do

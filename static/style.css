@@ -43,6 +43,12 @@ ul.permissions li:hover {
     background: #f5f5f5;
     box-shadow: 0 2px 5px rgba(0,0,0,.3);
 }
+ul.permissions li span {
+    float: right;
+    font-weight: lighter;
+    color: #aaa;
+    margin-right: 10px;
+}
 ul.permissions .close {
     float: right;
     font-weight: bold;
