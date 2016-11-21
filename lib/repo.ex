@@ -32,6 +32,7 @@ defmodule Pls.Repo.Group do
     
     has_many :permissions, Pls.Repo.Permission, on_delete: :delete_all
     has_many :memberships, Pls.Repo.Membership, on_delete: :delete_all
+    has_many :mandate_members, Pls.Repo.MandateMember, on_delete: :delete_all
 
     many_to_many :members, Pls.Repo.User, join_through: Pls.Repo.Membership, on_delete: :delete_all
   end
@@ -81,7 +82,7 @@ defmodule Pls.Repo.Permission do
   @derive {Poison.Encoder, only: [:name]}
   schema "permission" do
     belongs_to :group, Pls.Repo.Group
-    
+
     field :name, :string
   end
 
@@ -90,5 +91,24 @@ defmodule Pls.Repo.Permission do
     group = group || Pls.Queries.add_group group_name
     
     Ecto.build_assoc(group, :permissions, %{name: permission})
+  end
+end
+
+defmodule Pls.Repo.MandateMember do
+  use Ecto.Schema
+  import Ecto.Query
+
+  @derive {Poison.Encoder, only: [:name]}
+  schema "mandate_member" do
+    belongs_to :group, Pls.Repo.Group
+
+    field :name, :string
+  end
+
+  def new(group_name, mandate_member) do
+    group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
+    group = group || Pls.Queries.add_group group_name
+
+    Ecto.build_assoc(group, :mandate_members, %{name: mandate_member})
   end
 end

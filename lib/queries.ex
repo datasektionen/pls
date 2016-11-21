@@ -10,11 +10,12 @@ defmodule Pls.Queries do
   end
 
   def user(uid) do
-    dfunkt_group = Pls.Dfunkt.dfunkt_group uid
-    dfunkt_permissions = from(g in Pls.Repo.Group,
-      where: g.name |> like(^("%." <> dfunkt_group)),
-      preload: :permissions)
+    mandates = Pls.Dfunkt.get_mandates uid
+    mandate_groups = from(m in Pls.Repo.MandateMember,
+      where: m.name in ^mandates,
+      preload: [group: :permissions])
     |> Pls.Repo.all
+    |> Enum.map(&(&1.group))
     |> Enum.map(&(%{&1 | name: &1.name |> String.split(".") |> Enum.drop(-1) |> Enum.join(".")})) # remove .xxx suffix from name
 
     from(u in Pls.Repo.User,
@@ -22,7 +23,7 @@ defmodule Pls.Queries do
       preload: [groups: :permissions])
     |> Pls.Repo.all
     |> Enum.flat_map(&Map.get &1, :groups)
-    |> Enum.concat(dfunkt_permissions)
+    |> Enum.concat(mandate_groups)
     |> Enum.map(&parse_group &1)
     |> Enum.reduce(%{}, fn({name, permissions}, map) ->
         Map.update map, name, permissions, &Enum.uniq(Enum.concat &1, permissions)
@@ -45,19 +46,31 @@ defmodule Pls.Queries do
   def group(name) do
     group = from(g in Pls.Repo.Group,
       where: g.name == ^name,
-      preload: [:permissions, [memberships: :user]])
+      preload: [:permissions, :mandate_members, [memberships: :user]])
     |> Pls.Repo.one
 
     if group == nil, do: raise Maru.Exceptions.NotFound
 
     %{
         permissions: Enum.map(group.permissions, &(&1.name)),
-        memberships: Enum.map(group.memberships, &(%{name: &1.user.uid, expiry: &1.expiry}))
+        memberships: Enum.map(group.memberships, &(%{name: &1.user.uid, expiry: &1.expiry})),
+        mandate_members: Enum.map(group.mandate_members, &(&1.name))
     }
   end
 
   def group(name, permission) do
     Enum.member? group(name), permission
+  end
+
+  def mandate_member(mandate) do
+    Pls.Repo.all from(m in Pls.Repo.MandateMember,
+      where: m.name == ^mandate,
+      preload: :group)
+    |> Enum.map(&(&1.name))
+  end
+
+  def mandate_member(mandate, group_name) do
+    mandate_member(mandate) |> Enum.member?(group_name)
   end
 
   def insert(change) do
@@ -105,6 +118,18 @@ defmodule Pls.Queries do
 
     delete from(p in Pls.Repo.Permission, 
       where: [group_id: ^group_id, name: ^permission])
+  end
+
+  def add_mandate_member(mandate_member, group_name) do
+    insert Pls.Repo.MandateMember.new(group_name, mandate_member)
+  end
+
+  def delete_mandate_member(mandate_member, group_name) do
+    group_id = Pls.Repo.one from(g in Pls.Repo.Group,
+      where: g.name == ^group_name, select: g.id)
+
+    delete from(p in Pls.Repo.MandateMember,
+      where: [group_id: ^group_id, name: ^mandate_member])
   end
 
   def add_membership(uid, group_name, expiry) do

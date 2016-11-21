@@ -39,6 +39,7 @@ defmodule Pls.API do
   namespace :api do
     mount Pls.API.User
     mount Pls.API.Group
+    mount Pls.API.Mandate
   end
 
   rescue_from Pls.Auth.Unauthorized do

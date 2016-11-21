@@ -58,6 +58,7 @@
                 <h2>Användargrupp: {{ group }} <a href="#" class="close" @click="deleteGroup(group)">Ta bort</a></h2>
 
                 <div class="row">
+
                     <div class="col-md-6">
                         <h3>Rättigheter</h3>
                         <p>Alla gruppens medlemmar har rättigheterna som visas nedan.</p>
@@ -68,8 +69,8 @@
                                 <a href="#" class="close" @click="removePermission(permission)">x</a>
                             </li>
                             <li class="add">
-                                <input type="text" placeholder="Rättighet" name="permission" v-model="permission">
-                                <button @click="addPermission">&plus;</button>
+                                <input type="text" placeholder="Rättighet" name="permission" @keyup.enter="addPermission" v-model="permission">
+                                <button @click="addPermission" v-bind:disabled="permission.length == 0">&plus;</button>
                                 <div class="clear"></div>
                             </li>
                         </ul>
@@ -88,11 +89,30 @@
                             <li class="add ugly">
                                 <input type="text" placeholder="Användarnamn" @keyup.enter="addUser" name="user" v-model="user">
                                 <input type="date" placeholder="Utgångsdatum" @keyup.enter="addUser" name="expiry" v-model="expiry">
-                                <button @click="addUser" v-bind:disabled="user.length == 0">+</button>
+                                <button @click="addUser" v-bind:disabled="user.length == 0">&plus;</button>
                                 <div class="clear"></div>
                             </li>
                         </ul>
                     </div>
+
+                    <div class="col-md-6">
+                        <h3>Funktionärsmedlemmar</h3>
+                        <p>Email adresser till de funktionärer som automagiskt ska få gruppens rättigheter.</p>
+
+                        <ul class="permissions">
+                            <li v-for="mandate in mandate_members">
+                                {{ mandate }}
+                                <a href="#" class="close" @click="removeMandate(mandate)">x</a>
+                            </li>
+                            <li class="add">
+                                <input type="text" placeholder="Epost" name="mandate" @keyup.enter="addMandate" v-model="mandate">
+                                <button @click="addMandate" v-bind:disabled="mandate.length == 0">&plus;</button>
+                                <div class="clear"></div>
+                            </li>
+                        </ul>
+
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -104,14 +124,16 @@
     var app = new Vue({
         el: '#content',
         data: {
-            group: "",
-            newGroup: "",
+            group: '',
+            newGroup: '',
             groups: [],
-            user: "",
-            expiry: "",
+            user: '',
+            expiry: '',
             memberships: [],
-            permission: "",
-            permissions: []
+            permission: '',
+            permissions: [],
+            mandate: '',
+            mandate_members: []
         },
         created: function() {
             this.getGroups()
@@ -146,16 +168,19 @@
                 .then(res => {
                     this.memberships = res.memberships
                     this.permissions = res.permissions
+                    this.mandate_members = res.mandate_members
                 })
             },
             createGroup: function() {
                 var url = `/api/group/${this.newGroup}`
                 var opt = {method: 'POST'}
                 this.apiWrapper(url, opt).then(res => {
-                    if(res.name == this.newGroup)
-                        this.groups.push(this.newGroup)
+                    if(res.name == this.newGroup) {
+                        this.groups.push(res.name)
+                        this.group = res.name
+                        this.getGroup()
+                    }
 
-                    this.getGroup(this.newGroup)
                 })
             },
             deleteGroup: function(group) {
@@ -165,23 +190,39 @@
                         if(res[8] !== '0') // 1 or more rows were removed
                             this.groups.splice(this.groups.indexOf(group), 1)
                         if(this.groups.length)
-                            this.getGroup(this.groups[0])
+                            this.group = this.groups[0]
                         else
-                            this.group = ""
+                            this.group = ''
+
+                        this.getGroup()
                     })
             },
             addPermission: function() {
                 var url = `/api/group/${this.group}/${this.permission}`
                 var opt = {method: 'POST'}
                 this.apiWrapper(url, opt).then(res => {
-                    this.getGroup(this.group)
+                    this.getGroup()
                 })
             },
             removePermission: function(permission) {
                 var url = `/api/group/${this.group}/${permission}`
                 var opt = {method: 'DELETE'}
                 this.apiWrapper(url, opt).then(res => {
-                    this.getGroup(this.group)
+                    this.getGroup()
+                })
+            },
+            addMandate: function() {
+                var url = `/api/mandate/${this.mandate}/${this.group}`
+                var opt = {method: 'POST'}
+                this.apiWrapper(url, opt).then(res => {
+                    this.getGroup()
+                })
+            },
+            removeMandate: function(mandate) {
+                var url = `/api/mandate/${mandate}/${this.group}`
+                var opt = {method: 'DELETE'}
+                this.apiWrapper(url, opt).then(res => {
+                    this.getGroup()
                 })
             },
             addUser: function() {
@@ -193,14 +234,14 @@
                     }
                 }
                 this.apiWrapper(url, opt).then(res => {
-                    this.getGroup(this.group)
+                    this.getGroup()
                 })
             },
             removeUser: function(user) {
                 var url = `/api/user/${user}/${this.group}`
                 var opt = {method: 'DELETE'}
                 this.apiWrapper(url, opt).then(res => {
-                    this.getGroup(this.group)
+                    this.getGroup()
                 })
             }
         }
