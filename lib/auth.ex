@@ -6,50 +6,60 @@ defmodule Pls.Auth do
   end
 
   def init(options) do
-    if Application.get_env(:pls, :api_key) in ["", nil] do
+    if api_key in ["", nil] do
       [:red, "Environment variable LOGIN_API_KEY is missing"] |> IO.ANSI.format |> IO.puts
+      [:red, "Every request made will be allowed"] |> IO.ANSI.format |> IO.puts
     end
 
     options
   end
   
   def call(conn, _opts) do
-    case {Application.get_env(:pls, :api_key), conn.method} do
-      {_, "GET"}   -> conn
-      {"", _}      -> conn
-      {nil, _}     -> conn
-      {api_key, _} -> conn |> authenticate(api_key)
+    case {is_enabled?, conn.method} do
+      {_, "GET"} -> conn
+      {false, _} -> conn
+      {true,  _} -> conn |> authenticate
     end
   end
 
-  def authenticate(conn, api_key) do
+  def is_enabled? do
+    not api_key in ["", nil]
+  end
+
+  def api_key do
+    Application.get_env(:pls, :api_key)
+  end
+
+  def authenticate(conn) do
     if not Dict.has_key?(conn.params, "token"), do: raise Unauthorized
 
-    url = "https://login2.datasektionen.se/verify/" <> conn.params["token"]
-    res = get(url, query: %{api_key: api_key, format: "json"})
+    user = get_user(conn.params["token"])
 
-    if res.status_code != 200, do: raise Unauthorized
-
-    {:ok, json} = Poison.decode(res.body)
-
-    user = json["user"]
+    unless user, do: raise Unauthorized
 
     group = case conn.path_info do
       ["api", "user", _, group]    -> group
       ["api", "group", group]      -> group
       ["api", "group", group, _]   -> group
-      ["api", "mandate", group, _] -> group
+      ["api", "mandate", _, group] -> group
       _ -> raise Maru.Exceptions.MethodNotAllow
     end
 
-    group = case String.ends_with? group, ".dfunkt" do
-      true -> String.replace_suffix group, ".dfunkt", ""
-      false -> group
-    end
+    group = String.split(group, ".") |> List.first
 
     unless is_admin?(user, group), do: raise Unauthorized
 
     conn
+  end
+
+  def get_user(token) do
+    url = "https://login2.datasektionen.se/verify/" <> token
+    res = get(url, query: %{api_key: api_key, format: "json"})
+
+    case Poison.decode(res.body) do
+      {:ok, json} -> json["user"]
+      _           -> false
+    end
   end
 
   def is_admin?(user, group) do

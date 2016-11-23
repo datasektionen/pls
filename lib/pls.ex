@@ -57,7 +57,7 @@ defmodule Pls.API do
   rescue_from Maru.Exceptions.Validation, as: e do
     conn
     |> put_status(400)
-    |> text("Bad request. #{e.param} is #{e.reason}")
+    |> text("Bad request. Invalid #{e.param}")
   end
 
   rescue_from Maru.Exceptions.InvalidFormatter, as: e do
