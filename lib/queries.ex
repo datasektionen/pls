@@ -1,10 +1,6 @@
 defmodule Pls.Queries do
   import Ecto.Query
 
-  def parse_group(group) do
-    {group.name, Enum.map(group.permissions, &(&1.name))}
-  end
-
   def user do
     Pls.Repo.all from(u in Pls.Repo.User, select: u.uid)
   end
@@ -24,7 +20,9 @@ defmodule Pls.Queries do
     |> Pls.Repo.all
     |> Enum.flat_map(&Map.get &1, :groups)
     |> Enum.concat(mandate_groups)
-    |> Enum.map(&parse_group &1)
+    |> Enum.map(fn(group) -> 
+        {group.name, Enum.map(group.permissions, &(&1.name))}
+      end)
     |> Enum.reduce(%{}, fn({name, permissions}, map) ->
         Map.update map, name, permissions, &Enum.uniq(Enum.concat &1, permissions)
       end)
@@ -51,11 +49,9 @@ defmodule Pls.Queries do
 
     if group == nil, do: raise Maru.Exceptions.NotFound
 
-    %{
-        permissions: Enum.map(group.permissions, &(&1.name)),
-        memberships: Enum.map(group.memberships, &(%{name: &1.user.uid, expiry: &1.expiry})),
-        mandate_members: Enum.map(group.mandate_members, &(&1.name))
-    }
+    %{permissions: Enum.map(group.permissions, &(&1.name)),
+      memberships: Enum.map(group.memberships, &(%{name: &1.user.uid, expiry: &1.expiry})),
+      mandate_members: Enum.map(group.mandate_members, &(&1.name))}
   end
 
   def group(name, permission) do
@@ -63,10 +59,11 @@ defmodule Pls.Queries do
   end
 
   def mandate_member(mandate) do
-    Pls.Repo.all from(m in Pls.Repo.MandateMember,
+    from(m in Pls.Repo.MandateMember,
       where: m.name == ^mandate,
       preload: :group)
-    |> Enum.map(&(&1.name))
+    |> Pls.Repo.all
+    |> Enum.map(&(&1.group.name))
   end
 
   def mandate_member(mandate, group_name) do
