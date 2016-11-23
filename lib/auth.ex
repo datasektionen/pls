@@ -35,9 +35,10 @@ defmodule Pls.Auth do
     user = json["user"]
 
     group = case conn.path_info do
-      ["api", "user", _, group]  -> group
-      ["api", "group", group]    -> group
-      ["api", "group", group, _] -> group
+      ["api", "user", _, group]    -> group
+      ["api", "group", group]      -> group
+      ["api", "group", group, _]   -> group
+      ["api", "mandate", group, _] -> group
       _ -> raise Maru.Exceptions.MethodNotAllow
     end
 
