@@ -40,6 +40,10 @@ defmodule Pls.API do
     mount Pls.API.User
     mount Pls.API.Group
     mount Pls.API.Mandate
+    
+    get :clean do
+      conn |> json(Pls.Queries.clean_memberships)
+    end
   end
 
   rescue_from Pls.Auth.Unauthorized do

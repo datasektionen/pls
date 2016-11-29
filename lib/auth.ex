@@ -63,7 +63,7 @@ defmodule Pls.Auth do
   end
 
   def is_admin?(user, group) do
-    Pls.Queries.user(user) |> Map.has_key?("pls") ||
-    Pls.Queries.user(user) |> Map.has_key?("pls." <> group)
+    Pls.Queries.User.user(user) |> Map.has_key?("pls") ||
+    Pls.Queries.User.user(user) |> Map.has_key?("pls." <> group)
   end
 end

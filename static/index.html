@@ -70,7 +70,7 @@
                             </li>
                             <li class="add">
                                 <input type="text" placeholder="Rättighet" name="permission" @keyup.enter="addPermission" v-model="permission">
-                                <button @click="addPermission" v-bind:disabled="permission.length == 0">&plus;</button>
+                                <button @click="addPermission" :disabled="permission.length == 0">&plus;</button>
                                 <div class="clear"></div>
                             </li>
                         </ul>
@@ -89,7 +89,7 @@
                             <li class="add ugly">
                                 <input type="text" placeholder="Användarnamn" @keyup.enter="addUser" name="user" v-model="user">
                                 <input type="date" placeholder="Utgångsdatum" @keyup.enter="addUser" name="expiry" v-model="expiry">
-                                <button @click="addUser" v-bind:disabled="user.length == 0">&plus;</button>
+                                <button @click="addUser" :disabled="user.length == 0">&plus;</button>
                                 <div class="clear"></div>
                             </li>
                         </ul>
@@ -106,7 +106,7 @@
                             </li>
                             <li class="add">
                                 <input type="text" placeholder="Epost" name="mandate" @keyup.enter="addMandate" v-model="mandate">
-                                <button @click="addMandate" v-bind:disabled="mandate.length == 0">&plus;</button>
+                                <button @click="addMandate" :disabled="mandate.length == 0">&plus;</button>
                                 <div class="clear"></div>
                             </li>
                         </ul>

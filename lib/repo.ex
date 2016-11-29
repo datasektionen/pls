@@ -60,9 +60,9 @@ defmodule Pls.Repo.Membership do
 
   def new(uid, group_name, expiry) do
     user = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^uid)
-    user = user || Pls.Queries.add_user uid
+    user = user || Pls.Queries.User.add_user uid
     group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
-    group = group || Pls.Queries.add_group group_name
+    group = group || Pls.Queries.Group.add_group group_name
 
     date = case Ecto.Date.cast expiry do
       {:ok, date} -> date
@@ -88,7 +88,7 @@ defmodule Pls.Repo.Permission do
 
   def new(group_name, permission) do
     group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
-    group = group || Pls.Queries.add_group group_name
+    group = group || Pls.Queries.Group.add_group group_name
     
     Ecto.build_assoc(group, :permissions, %{name: permission})
   end
@@ -107,7 +107,7 @@ defmodule Pls.Repo.MandateMember do
 
   def new(group_name, mandate_member) do
     group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
-    group = group || Pls.Queries.add_group group_name
+    group = group || Pls.Queries.Group.add_group group_name
 
     Ecto.build_assoc(group, :mandate_members, %{name: mandate_member})
   end
