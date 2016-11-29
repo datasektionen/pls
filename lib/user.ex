@@ -60,20 +60,22 @@ defmodule Pls.Queries.User do
       where: m.name in ^mandates,
       preload: [group: :permissions])
     |> Pls.Repo.all
-    |> Enum.map(&(&1.group))
-    |> Enum.map(&(%{&1 | name: &1.name |> String.split(".") |> Enum.drop(-1) |> Enum.join(".")})) # remove .xxx suffix from name
 
-    from(u in Pls.Repo.User,
-      where: u.uid == ^uid,
-      preload: [groups: :permissions])
+    user_id = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^uid, select: u.id)
+
+    from(m in Pls.Repo.Membership,
+      where: m.user_id == ^user_id and m.expiry > ^Ecto.Date.utc,
+      preload: [group: :permissions])
     |> Pls.Repo.all
-    |> Enum.flat_map(&Map.get &1, :groups)
     |> Enum.concat(mandate_groups)
-    |> Enum.map(fn(group) ->
-        {group.name, Enum.map(group.permissions, &(&1.name))}
+    |> Enum.map(fn(x) ->
+        {
+          x.group.name |> String.split(".") |> List.first,
+          x.group.permissions |> Enum.map(&(&1.name))
+        }
       end)
     |> Enum.reduce(%{}, fn({name, permissions}, map) ->
-        Map.update map, name, permissions, &Enum.uniq(Enum.concat &1, permissions)
+        map |> Map.update(name, permissions, &Enum.uniq(Enum.concat &1, permissions))
       end)
   end
 
