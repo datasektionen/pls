@@ -79,7 +79,7 @@ defmodule Pls.Queries.Group do
   end
 
   def group(name, permission) do
-    Enum.member? group(name), permission
+    Enum.member? group(name).permissions, permission
   end
 
   def add_group(name) do
