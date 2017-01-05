@@ -63,12 +63,16 @@ defmodule Pls.Queries.User do
 
     user_id = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^uid, select: u.id)
 
-    from(m in Pls.Repo.Membership,
-      where: m.user_id == ^user_id and m.expiry > ^Ecto.Date.utc,
-      preload: [group: :permissions])
-    |> Pls.Repo.all
-    |> Enum.concat(mandate_groups)
-    |> Enum.map(fn(x) ->
+    groups = case user_id do
+      nil -> mandate_groups
+      id  -> from(m in Pls.Repo.Membership,
+                  where: m.user_id == ^id and m.expiry > ^Ecto.Date.utc,
+                  preload: [group: :permissions])
+              |> Pls.Repo.all
+              |> Enum.concat(mandate_groups)
+    end
+
+    groups |> Enum.map(fn(x) ->
         {
           x.group.name |> String.split(".") |> List.first,
           x.group.permissions |> Enum.map(&(&1.name))
