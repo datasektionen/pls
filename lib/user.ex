@@ -84,7 +84,7 @@ defmodule Pls.Queries.User do
   end
 
   def user(uid, group_name) do
-    Map.get user(uid), group_name, false
+    Map.get user(uid), group_name, []
   end
 
   def user(uid, group_name, permission) do
