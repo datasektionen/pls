@@ -9,20 +9,17 @@
     <link rel="stylesheet" href="https://aurora.datasektionen.se/" type="text/css" />
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript">
-    window.tbaas_conf = {
+    window.methone_conf = {
         system_name: "pls",
-        target_id: "tbaas",
-        primary_color: "#7E57C2",
-        secondary_color: "#fff",
-        bar_color: "#673AB7",
-        topbar_items: [
+        color_scheme: "deep-purple",
+        links: [
             { str: "Hem", href: "/" }
         ]
     }
     </script>
 </head>
 <body>
-    <div id="tbaas"></div>
+    <div id="methone-container-replace"></div>
     <div id="application" class="deep-purple">
         <header>
             <div class="header-inner">
@@ -118,7 +115,7 @@
         </div>
     </div>
 
-    <script src="https://methone.datasektionen.se"></script>
+    <script src="https://methone.datasektionen.se/bar.js"></script>
     <script type="text/javascript">
     var token = location.search.substr(1).split("=")[1]
     var app = new Vue({
