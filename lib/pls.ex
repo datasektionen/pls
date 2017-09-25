@@ -7,9 +7,16 @@ defmodule Pls do
     import Supervisor.Spec, warn: false
 
     children = [
-      # Define workers and child supervisors to be supervised
-      # worker(Pls.Worker, [arg1, arg2, arg3]),
-      supervisor(Pls.Repo, [])
+      Pls.Repo,
+      {
+        Plug.Adapters.Cowboy,
+        scheme: :http,
+        plug: Pls.Router,
+        options: [port: case Integer.parse(System.get_env("PORT")) do
+                          {p, _} -> p
+                          _ -> 5000
+                        end]
+      }
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
@@ -19,61 +26,3 @@ defmodule Pls do
   end
 end
 
-defmodule Pls.API do
-  use Maru.Router
-
-  before do
-    plug Plug.Logger
-    plug Plug.Static, at: "/", from: "static/"
-    plug Plug.Parsers,
-      pass: ["*/*"],
-      json_decoder: Poison,
-      parsers: [:urlencoded, :json, :multipart]
-
-      plug CORSPlug
-
-    plug Pls.Auth
-    plug Pls.Admin
-  end
-
-  namespace :api do
-    mount Pls.API.User
-    mount Pls.API.Group
-    mount Pls.API.Mandate
-    
-    get :clean do
-      conn |> json(Pls.Queries.clean_memberships)
-    end
-  end
-
-  rescue_from Pls.Auth.Unauthorized do
-    conn
-    |> put_status(401)
-    |> text("Unauthorized")
-  end
-
-  rescue_from Maru.Exceptions.NotFound do
-    conn
-    |> put_status(404)
-    |> text("Not Found")
-  end
-
-  rescue_from Maru.Exceptions.Validation, as: e do
-    conn
-    |> put_status(400)
-    |> text("Bad request. Invalid #{e.param}")
-  end
-
-  rescue_from Maru.Exceptions.InvalidFormatter, as: e do
-    conn
-    |> put_status(400)
-    |> text("Bad request. #{e.param} is #{e.reason}")
-  end
-
-  rescue_from Maru.Exceptions.MethodNotAllow do
-    conn
-    |> put_status(400)
-    |> text("Bad request. Method not allowed.")
-  end
-
-end
