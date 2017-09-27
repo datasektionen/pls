@@ -18,7 +18,7 @@ defmodule Pls.Router.Mandate do
   end
 
   post "/:mandate/:group" do
-    conn |> to_json(Pls.Queries.Mandate.add_mandate mandate, group)
+    conn |> to_json(Pls.Queries.Mandate.add_mandate URI.decode(mandate), URI.decode(group))
   end
 
   delete "/:mandate/:group" do

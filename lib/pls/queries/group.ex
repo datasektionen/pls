@@ -26,7 +26,7 @@ defmodule Pls.Queries.Group do
   end
 
   def add_group(name) do
-    Pls.Queries.insert Pls.Repo.Group.new(name)
+    Pls.Queries.insert Pls.Repo.Group.new(URI.decode name)
   end
 
   def delete_group(name) do

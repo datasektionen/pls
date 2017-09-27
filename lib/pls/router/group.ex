@@ -18,7 +18,7 @@ defmodule Pls.Router.Group do
   end
 
   post "/:group" do
-    conn |> to_json(Pls.Queries.Group.add_group group)
+    conn |> to_json(Pls.Queries.Group.add_group URI.decode(group))
   end
 
   delete "/:group" do
@@ -30,7 +30,7 @@ defmodule Pls.Router.Group do
   end
 
   post "/:group/:permission" do
-    conn |> to_json(Pls.Queries.Group.add_permission group, permission)
+    conn |> to_json(Pls.Queries.Group.add_permission URI.decode(group), URI.decode(permission))
   end
 
   delete "/:group/:permission" do

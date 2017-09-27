@@ -22,7 +22,7 @@ defmodule Pls.Router.Token do
   end
 
   post "/:tag/:group" do
-    conn |> to_json(Pls.Queries.Token.add_token tag, group)
+    conn |> to_json(Pls.Queries.Token.add_token URI.decode(tag), URI.decode(group))
   end
 
   delete "/:tag/:group" do
