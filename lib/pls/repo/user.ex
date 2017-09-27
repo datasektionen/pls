@@ -6,7 +6,7 @@ defmodule Pls.Repo.User do
   schema "user" do
     field :uid, :string
     
-    many_to_many :groups, Pls.Repo.Group, join_through: Pls.Repo.Membership, on_delete: :delete_all
+    #many_to_many :groups, Pls.Repo.Group, join_through: Pls.Repo.Membership, on_delete: :delete_all
   end
 
   def new(uid) do

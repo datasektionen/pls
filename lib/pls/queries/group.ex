@@ -8,14 +8,14 @@ defmodule Pls.Queries.Group do
   def group(name) do
     group = from(g in Pls.Repo.Group,
       where: g.name == ^name,
-      preload: [:permissions, :mandates, [memberships: :user], :tokens])
+      preload: [:permissions, :mandates, :memberships, :tokens])
     |> Pls.Repo.one
 
     if group == nil do
       {:error, :no_such_group}
     else
-      %{permissions: Enum.map(group.permissions, &(&1.name)),
-        memberships: Enum.map(group.memberships, &(%{name: &1.user.uid, expiry: &1.expiry})),
+      %{memberships: group.memberships,
+        permissions: Enum.map(group.permissions, &(&1.name)),
         mandates: Enum.map(group.mandates, &(&1.name)),
         tags: Enum.map(group.tokens, &(&1.tag))}
     end

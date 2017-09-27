@@ -10,15 +10,15 @@ defmodule Pls.Router.Token do
   end
   
   get "/:token" do
-    conn |> to_json(Pls.Queries.Token.token token)
+    conn |> to_json(Pls.Queries.User.user token)
   end
 
   get "/:token/:system" do
-    conn |> to_json(Pls.Queries.Token.token token, system)
+    conn |> to_json(Pls.Queries.User.user token, system)
   end
 
   get "/:token/:system/:permission" do
-    conn |> to_json(Pls.Queries.Token.token token, system, permission)
+    conn |> to_json(Pls.Queries.User.user token, system, permission)
   end
 
   post "/:tag/:group" do

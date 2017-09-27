@@ -5,17 +5,17 @@ defmodule Pls do
   # for more information on OTP Applications
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
-
+    port = case Integer.parse(System.get_env("PORT") || "") do
+      {p, _} -> p
+      _ -> 5000
+    end
     children = [
       Pls.Repo,
       {
         Plug.Adapters.Cowboy,
         scheme: :http,
         plug: Pls.Router,
-        options: [port: case Integer.parse(System.get_env("PORT")) do
-                          {p, _} -> p
-                          _ -> 5000
-                        end]
+        options: [port: port]
       }
     ]
 

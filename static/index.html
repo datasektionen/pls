@@ -87,8 +87,8 @@
                         <p>Här visas gruppens medlemmar.</p>
                         <ul class="permissions">
                             <li v-for="membership in memberships">
-                                {{ membership.name }}
-                                <a href="#" class="remove" @click="removeUser(membership.name)">x</a>
+                                {{ membership.uid }}
+                                <a href="#" class="remove" @click="removeUser(membership.uid)">x</a>
                                 <span class="expiry">Utgångsdatum: {{ membership.expiry }}</span>
                             </li>
                             <li class="add ugly">
@@ -175,6 +175,9 @@
         computed: {
             filteredGroups: function() {
                 return this.groups.filter(g => g.split('.')[0] === this.system)
+            },
+            systems: function() {
+                return this.groups.map(g => g.split('.')[0]).reduce((acc, d) => acc.includes(d) ? acc : acc.concat(d), [])
             }
         },
         methods: {
@@ -196,9 +199,8 @@
                 .then(res => res.json())
                 .then(res => {
                     this.groups = res
-                    this.systems = res.map(g => g.split('.')[0]).reduce((acc, d) => acc.includes(d) ? acc : acc.concat(d), [])
-                    if(this.groups.indexOf(this.group) != -1 && this.groups.length)
-                        this.group = this.groups[0]
+                    if(this.groups.indexOf(this.group) != -1 && this.filteredGroups.length)
+                        this.group = this.filteredGroups[0]
                 })
 
             },
@@ -218,6 +220,7 @@
                 this.apiWrapper(url, opt).then(res => {
                     if(res.name == this.newGroup) {
                         this.groups.push(res.name)
+                        this.system = res.name.split('.')[0]
                         this.group = res.name
                         this.getGroup()
                     }
@@ -271,7 +274,7 @@
                 var opt = {method: 'POST'}
                 this.apiWrapper(url, opt).then(res => {
                     console.log(res)
-                    this.tokenflash = res.token
+                    this.tokenflash = res.token || ''
                     this.getGroup()
                 })
             },

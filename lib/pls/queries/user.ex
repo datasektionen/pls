@@ -1,32 +1,40 @@
 defmodule Pls.Queries.User do
   import Ecto.Query
 
-  def user do
-    Pls.Repo.all from(u in Pls.Repo.User, select: u.uid)
+  def mandates_and_memberships(uid) do
+    mandates = Pls.Dfunkt.get_mandates uid
+    mandates = from(m in Pls.Repo.Mandate,
+      where: m.name in ^mandates,
+      select: m.group_id)
+    |> Pls.Repo.all
+
+    memberships = from(m in Pls.Repo.Membership,
+      where: m.uid == ^uid and m.expiry > ^Ecto.Date.utc,
+      select: m.group_id)
+    |> Pls.Repo.all
+
+    Enum.concat(mandates, memberships)
   end
 
   def user(uid) do
-    mandates = Pls.Dfunkt.get_mandates uid
-    mandate_groups = from(m in Pls.Repo.Mandate,
-      where: m.name in ^mandates,
-      preload: [group: :permissions])
+    tokens = from(t in Pls.Repo.Token,
+      where: t.token == ^uid,
+      select: t.group_id)
     |> Pls.Repo.all
 
-    user_id = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^uid, select: u.id)
-
-    groups = case user_id do
-      nil -> mandate_groups
-      id  -> from(m in Pls.Repo.Membership,
-                  where: m.user_id == ^id and m.expiry > ^Ecto.Date.utc,
-                  preload: [group: :permissions])
-              |> Pls.Repo.all
-              |> Enum.concat(mandate_groups)
+    groups = case tokens do
+      [] -> mandates_and_memberships(uid)
+      g  -> g
     end
 
-    groups |> Enum.map(fn(x) ->
+    from(g in Pls.Repo.Group,
+      where: g.id in ^groups,
+      preload: :permissions)
+    |> Pls.Repo.all
+    |> Enum.map(fn(group) ->
         {
-          x.group.name |> String.split(".") |> List.first,
-          x.group.permissions |> Enum.map(&(&1.name))
+          group.name |> String.split(".") |> List.first,
+          group.permissions |> Enum.map(&(&1.name))
         }
       end)
     |> Enum.reduce(%{}, fn({name, permissions}, map) ->
@@ -43,23 +51,14 @@ defmodule Pls.Queries.User do
     permissions && Enum.member? permissions, permission
   end
 
-  def add_user(uid) do
-    Pls.Queries.insert Pls.Repo.User.new(uid)
-  end
-  def delete_user(uid) do
-    Pls.Queries.delete from(g in Pls.Repo.User,
-      where: g.uid == ^uid)
-  end
-
   def add_membership(uid, group_name, expiry) do
     Pls.Queries.insert Pls.Repo.Membership.new(uid, group_name, expiry)
   end
 
   def delete_membership(uid, group_name) do
-    user = Pls.Repo.one from(u in Pls.Repo.User, where: u.uid == ^uid)
     group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
 
-    Pls.Queries.delete from(m in Pls.Repo.Membership, where: [user_id:  ^user.id, group_id: ^group.id])
+    Pls.Queries.delete from(m in Pls.Repo.Membership, where: [uid:  ^uid, group_id: ^group.id])
   end
 
   def clean do
