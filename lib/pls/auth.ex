@@ -4,7 +4,7 @@ defmodule Pls.Auth do
 
   def init(options) do
     api_key = Keyword.get(options, :login_api_key)
-    
+
     if api_key == nil do
       [:red, "Environment variable LOGIN_API_KEY is missing"] |> IO.ANSI.format |> IO.puts
       [:red, "Every request made will be allowed!"] |> IO.ANSI.format |> IO.puts
@@ -19,13 +19,17 @@ defmodule Pls.Auth do
 
     Map.new(options)
   end
-  
+
   def call(conn, %{login_api_key: api_key, login_host: host})
     when api_key == nil or host == nil do
     conn |> assign(:user, :developer)
   end
 
   def call(%Plug.Conn{method: "POST"} = conn, options) do
+    conn |> authenticate(options)
+  end
+
+  def call(%Plug.Conn{method: "DELETE"} = conn, options) do
     conn |> authenticate(options)
   end
 
@@ -40,13 +44,13 @@ defmodule Pls.Auth do
     case check_group(user, group) do
       {:ok, user} ->
         conn |> assign(:user, user)
-      
+
       {:error, :missing_token} ->
         conn |> send_resp(400, "Missing token") |> halt()
-      
+
       {:error, :invalid_token} ->
         conn |> send_resp(401, "Invalid token") |> halt()
-      
+
       {:error, :unauthorized} ->
         conn |> send_resp(401, "Unauthorized") |> halt()
     end
@@ -57,7 +61,7 @@ defmodule Pls.Auth do
       ["api", "user", _, group]    -> group
       ["api", "group", group]      -> group
       ["api", "group", group, _]   -> group
-      ["api", "_", _, group]       -> group
+      ["api", _, _, group]         -> group
       _ -> "pls"
     end
   end
@@ -81,7 +85,7 @@ defmodule Pls.Auth do
   end
 
   def check_group({:ok, user}, group) do
-    if Pls.Queries.User.user(user, "pls", group) or 
+    if Pls.Queries.User.user(user, "pls", group) or
       Pls.Queries.User.user(user, "pls", "pls") do
         {:ok, user}
       else
