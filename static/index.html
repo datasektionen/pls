@@ -12,6 +12,8 @@
     window.methone_conf = {
         system_name: "pls",
         color_scheme: "deep_purple",
+        login_text: "",
+        login_href: "",
         links: [
             { str: "Hem", href: "/" }
         ]
@@ -123,7 +125,7 @@
                         <p>API-Key-as-a-Service?. En tagg skulle kunna vara: prometheus-prod, pelles-testnyckel. Du kommer få se din token här under när den skapats, men bara en gång!</p>
 
                         <p v-if="tokenflash.length"
-                            style="word-wrap: break-word;" 
+                            style="word-wrap: break-word;"
                             class="alert alert-info">
                             Här är din nyckel: <br />{{tokenflash}}
                         </p>
