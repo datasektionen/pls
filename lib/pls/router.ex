@@ -3,6 +3,8 @@ defmodule Pls.Router do
 
   if Mix.env == :dev do
     use Plug.Debugger, otp_app: :pls
+  else
+    plug Plug.SSL, rewrite_on: [:x_forwarded_proto]
   end
 
   plug Plug.Logger

@@ -13,6 +13,11 @@ To enter an interactive elixir shell and start the server run
 iex -S mix
 ```
 
+To enter en iteractive elixir shell when a server is already running run
+```bash
+iex -S mix pls
+```
+
 
 From there you can use the methods defined in Pls.Queries to edit the database. Most likely you would want to add these as a default, so that you can later use the frontend to make changes.
 
