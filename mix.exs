@@ -27,7 +27,8 @@ defmodule Pls.Mixfile do
       {:httpoison, "~> 0.13"},
       {:poison,    "~> 3.1"},
       {:cors_plug, "~> 1.1"},
-      {:cowboy,    "~> 1.1"}
+      {:cowboy,    "~> 1.1"},
+      {:plug_cowboy, "~> 1.0"}
     ]
   end
 end

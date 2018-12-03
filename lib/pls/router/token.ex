@@ -8,17 +8,17 @@ defmodule Pls.Router.Token do
     |> put_resp_content_type("application/json")
     |> send_resp(200, Poison.encode!(data))
   end
-  
+
   get "/:token" do
-    conn |> to_json(Pls.Queries.User.user token)
+    conn |> to_json(Pls.Queries.Token.get_token token)
   end
 
   get "/:token/:system" do
-    conn |> to_json(Pls.Queries.User.user token, system)
+    conn |> to_json(Pls.Queries.Token.get_token token, system)
   end
 
   get "/:token/:system/:permission" do
-    conn |> to_json(Pls.Queries.User.user token, system, permission)
+    conn |> to_json(Pls.Queries.Token.get_token token, system, permission)
   end
 
   post "/:tag/:group" do

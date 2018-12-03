@@ -17,15 +17,7 @@ defmodule Pls.Queries.User do
   end
 
   def user(uid) do
-    tokens = from(t in Pls.Repo.Token,
-      where: t.token == ^uid,
-      select: t.group_id)
-    |> Pls.Repo.all
-
-    groups = case tokens do
-      [] -> mandates_and_memberships(uid)
-      g  -> g
-    end
+    groups = mandates_and_memberships(uid)
 
     from(g in Pls.Repo.Group,
       where: g.id in ^groups,
