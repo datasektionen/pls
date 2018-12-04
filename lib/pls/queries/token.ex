@@ -16,13 +16,14 @@ defmodule Pls.Queries.Token do
   end
 
   def get_token(token) do
-    groups = from(t in Pls.Repo.Token,
-      where: t.token == ^token,
-      select: t.group_id)
-    |> Pls.Repo.all
+    token = Pls.Repo.one from(t in Pls.Repo.Token, where: t.token == ^token)
+
+    if token do
+      Pls.Queries.update Pls.Repo.Token.accessed(token)
+    end
 
     from(g in Pls.Repo.Group,
-      where: g.id in ^groups,
+      where: g.id == ^token.group_id,
       preload: :permissions)
     |> Pls.Repo.all
     |> Enum.map(fn(group) ->

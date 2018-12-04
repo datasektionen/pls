@@ -17,7 +17,7 @@ defmodule Pls.Queries.Group do
       %{memberships: group.memberships,
         permissions: Enum.map(group.permissions, &(&1.name)),
         mandates: Enum.map(group.mandates, &(&1.name)),
-        tags: Enum.map(group.tokens, &(&1.tag))}
+        tags: Enum.map(group.tokens, &(%{tag: &1.tag, accessed: &1.accessed}))}
     end
   end
 

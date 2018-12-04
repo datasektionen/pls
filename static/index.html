@@ -132,8 +132,9 @@
 
                         <ul class="permissions">
                             <li v-for="tag in tags">
-                                {{ tag }}
+                                {{ tag.tag }}
                                 <a href="#" class="close" @click="removeToken(tag)">x</a>
+                                <span>(last accessed: {{ tag.accessed }})</span>
                             </li>
                             <li class="add">
                                 <input type="text" placeholder="Tagg" name="tag" @keyup.enter="addToken" v-model="tag">
