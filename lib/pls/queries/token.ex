@@ -16,13 +16,13 @@ defmodule Pls.Queries.Token do
   end
 
   def get_token(token) do
-    group_id = from(t in Pls.Repo.Token,
+    groups = from(t in Pls.Repo.Token,
       where: t.token == ^token,
       select: t.group_id)
-    |> Pls.Repo.one
+    |> Pls.Repo.all
 
     from(g in Pls.Repo.Group,
-      where: g.id == ^group_id,
+      where: g.id in ^groups,
       preload: :permissions)
     |> Pls.Repo.all
     |> Enum.map(fn(group) ->
@@ -37,7 +37,7 @@ defmodule Pls.Queries.Token do
   end
 
   def get_token(token, system) do
-    get_token(token, system)
+    get_token(token)
     |> Map.get(system, [])
   end
 
