@@ -131,14 +131,14 @@
                         </p>
 
                         <ul class="permissions">
-                            <li v-for="tag in tags">
-                                {{ tag.tag }}
-                                <a href="#" class="close" @click="removeToken(tag)">x</a>
-                                <span>(last accessed: {{ tag.accessed }})</span>
+                            <li v-for="token in tokens">
+                                {{ token.tag }}
+                                <a href="#" class="close" @click="removeToken(token.tag)">x</a>
+                                <span>(last accessed: {{ token.accessed }})</span>
                             </li>
                             <li class="add">
                                 <input type="text" placeholder="Tagg" name="tag" @keyup.enter="addToken" v-model="tag">
-                                <button @click="addToken" :disabled="tag.length == 0">&plus;</button>
+                                <button @click="addToken" :disabled="token.length == 0">&plus;</button>
                                 <div class="clear"></div>
                             </li>
                         </ul>
@@ -169,7 +169,7 @@
             mandate: '',
             mandates: [],
             tag: '',
-            tags: [],
+            tokens: [],
             tokenflash: ''
         },
         created: function() {
@@ -214,7 +214,7 @@
                     this.memberships = res.memberships
                     this.permissions = res.permissions
                     this.mandates = res.mandates
-                    this.tags = res.tags
+                    this.tokens = res.tokens
                 })
             },
             createGroup: function() {
