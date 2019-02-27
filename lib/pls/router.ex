@@ -43,8 +43,7 @@ defmodule Pls.Router do
     end
   end
 
-  get _ do
+  match _ do
     conn |> send_resp(404, "Not found")
   end
-
 end
