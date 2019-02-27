@@ -7,4 +7,5 @@ config :pls,
 
 config :pls, Pls.Repo,
   adapter: Ecto.Adapters.Postgres,
-  url: System.get_env("DATABASE_URL") || "postgres://postgres@localhost/postgres"
+  url: System.get_env("DATABASE_URL") || "postgres://postgres@localhost/postgres",
+  log_level: :info

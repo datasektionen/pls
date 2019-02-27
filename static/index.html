@@ -138,7 +138,7 @@
                             </li>
                             <li class="add">
                                 <input type="text" placeholder="Tagg" name="tag" @keyup.enter="addToken" v-model="tag">
-                                <button @click="addToken" :disabled="token.length == 0">&plus;</button>
+                                <button @click="addToken" :disabled="tag.length == 0">&plus;</button>
                                 <div class="clear"></div>
                             </li>
                         </ul>
