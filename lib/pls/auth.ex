@@ -40,6 +40,8 @@ defmodule Pls.Auth do
   def authenticate(conn, options) do
     user = get_user(conn.params["token"], options)
     group = get_group(conn.path_info) |> String.split(".") |> List.first
+    IO.puts "#{elem(user, 1)}"
+    IO.puts "#{group}"
 
     case check_group(user, group) do
       {:ok, user} ->
@@ -73,7 +75,9 @@ defmodule Pls.Auth do
   def get_user(token, %{login_host: login_host, login_api_key: api_key}) do
     url = "https://#{login_host}/verify/" <> token
     res = get!(url, [], params: %{api_key: api_key, format: "json"})
-
+    IO.puts "https://#{login_host}/verify/.../?api_key=#{api_key}"
+    IO.puts "#{res.status_code}"
+    IO.puts "#{res.body}"
     case Poison.decode(res.body) do
       {:ok, json} -> {:ok, json["user"]}
       _           -> {:error, :invalid_token}
@@ -85,10 +89,13 @@ defmodule Pls.Auth do
   end
 
   def check_group({:ok, user}, group) do
+    IO.puts Pls.Queries.User.user(user, "pls", group)
+    IO.puts Pls.Queries.User.user(user, "pls", "pls")
     if Pls.Queries.User.user(user, "pls", group) or
       Pls.Queries.User.user(user, "pls", "pls") do
         {:ok, user}
       else
+        IO.puts "unauthorized"
         {:error, :unauthorized}
       end
   end
