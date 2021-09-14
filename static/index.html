@@ -38,6 +38,13 @@
             </div>
         </header>
         <div id="content">
+            <div
+                v-if="error"
+                style="word-wrap: break-word;"
+                class="alert alert-danger"
+            >
+                {{error}}
+            </div>
             <h1>Användargrupper</h1>
             <div class="select">
                 <select v-model="system">
@@ -152,7 +159,24 @@
 
     <script src="https://methone.datasektionen.se/bar.js"></script>
     <script type="text/javascript">
-    var token = location.search.substr(1).split("=")[1]
+
+    // Get token from url
+    const token_url = location.search.substr(1).split("=")[1]
+    // If token exists
+    if (token_url) {
+        var date = new Date();
+        // Expire in 6 hours
+        // Fun: the token from login can expire before this cookie expires
+        // In that case you will simply get a 401...
+        date.setTime(date.getTime() + (6*3600*1000));
+        // Set cookie
+        document.cookie = `token=${token_url}; expires=${date.toUTCString()}`
+        // Remove "?token=***" part of url
+        window.location = window.location.origin
+    }
+
+    var token = document.cookie.split("token=")[1]
+
     var app = new Vue({
         el: '#content',
         data: {
@@ -170,7 +194,8 @@
             mandates: [],
             tag: '',
             tokens: [],
-            tokenflash: ''
+            tokenflash: '',
+            error: '',
         },
         created: function() {
             this.getGroups()
@@ -187,13 +212,23 @@
             apiWrapper: function(url, options) {
                 return fetch(url, Object.assign({}, options, {
                     headers: {
-                      'Accept': 'application/json',
-                      'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(Object.assign({token}, options.body))
-              })).then(res => res.json())
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(Object.assign({token}, options.body))
+                })).then(res => {
+                    if (!res.ok) {
+                        res.text().then(t => {
+                            this.error = `${res.status}: ${t}`
+                            throw new Error(t)
+                        })
+                    } else {
+                        return res.json()
+                    }
+                })
                 .then(res => {
                     console.log(res)
+                    this.error = ""
                     return Promise.resolve(res)
                 })
             },

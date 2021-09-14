@@ -35,10 +35,12 @@ defmodule Pls.Router do
     callback = URI.encode_www_form("#{conn.scheme}://#{host}/?token=")
     login_host = Application.get_env(:pls, :login_host)
     url  = "https://#{login_host}/login?callback=#{callback}"
-
-    if conn.params |> Map.has_key?("token") do
+    token = Plug.Conn.fetch_cookies(conn) |> Map.from_struct() |> get_in([:cookies, "token"])
+  
+    # If has cookie token or token in url
+    if token != nil or (conn.params |> Map.has_key?("token")) do
       conn |> send_file(200, "static/index.html")
-    else
+    else # redirect to login
       conn |> put_resp_header("location", url) |> send_resp(302, "")
     end
   end
