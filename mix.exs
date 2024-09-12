@@ -5,8 +5,8 @@ defmodule Pls.Mixfile do
     [
       app: :pls,
       version: "0.1.0",
-      elixir: "~> 1.5",
-      start_permanent: Mix.env == :prod,
+      elixir: "~> 1.7",
+      start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
@@ -14,21 +14,21 @@ defmodule Pls.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
-      mod: {Pls, []}
+      mod: {Pls.Application, []},
+      extra_applications: [:logger]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto,      "~> 2.2"},
-      {:postgrex,  ">= 0.0.0"},
-      {:httpoison, "~> 0.13"},
-      {:poison,    "~> 3.1"},
-      {:cors_plug, "~> 1.1"},
-      {:cowboy,    "~> 1.1"},
-      {:plug_cowboy, "~> 1.0"}
+      {:ecto, "~> 3.12"},
+      {:ecto_sql, "~> 3.6"},
+      {:postgrex, ">= 0.0.0"},
+      {:httpoison, "~> 2.2"},
+      {:poison, "~> 6.0"},
+      {:cors_plug, "~> 3.0"},
+      {:bandit, "~> 1.5"}
     ]
   end
 end

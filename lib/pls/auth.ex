@@ -6,31 +6,31 @@ defmodule Pls.Auth do
     api_key = Keyword.get(options, :login_api_key)
 
     if api_key == nil do
-      [:red, "Environment variable LOGIN_API_KEY is missing"] |> IO.ANSI.format |> IO.puts
-      [:red, "Every request made will be allowed!"] |> IO.ANSI.format |> IO.puts
+      (IO.ANSI.red() <> "Environment variable LOGIN_API_KEY is missing") |> IO.puts()
+      (IO.ANSI.red() <> "Every request made will be allowed!") |> IO.puts()
     end
 
     host = Keyword.get(options, :login_host)
 
     if host == nil do
-      [:red, "Environment variable LOGIN_HOST is missing"] |> IO.ANSI.format |> IO.puts
-      [:red, "Every request made will be allowed!"] |> IO.ANSI.format |> IO.puts
+      (IO.ANSI.red() <> "Environment variable LOGIN_HOST is missing") |> IO.puts()
+      (IO.ANSI.red() <> "Every request made will be allowed!") |> IO.puts()
     end
 
     Map.new(options)
   end
 
   def call(conn, %{login_api_key: api_key, login_host: host})
-    when api_key == nil or host == nil do
-    conn |> assign(:user, :developer)
+      when api_key == nil or host == nil do
+    assign(conn, :user, :developer)
   end
 
   def call(%Plug.Conn{method: "POST"} = conn, options) do
-    conn |> authenticate(options)
+    authenticate(conn, options)
   end
 
   def call(%Plug.Conn{method: "DELETE"} = conn, options) do
-    conn |> authenticate(options)
+    authenticate(conn, options)
   end
 
   def call(conn, _) do
@@ -39,11 +39,11 @@ defmodule Pls.Auth do
 
   def authenticate(conn, options) do
     user = get_user(conn.params["token"], options)
-    group = get_group(conn.path_info) |> String.split(".") |> List.first
+    group = get_group(conn.path_info) |> String.split(".") |> List.first()
 
     # Debug
-    IO.puts "#{elem(user, 1)}"
-    IO.puts "#{group}"
+    IO.puts("#{elem(user, 1)}")
+    IO.puts("#{group}")
 
     case check_group(user, group) do
       {:ok, user} ->
@@ -62,10 +62,10 @@ defmodule Pls.Auth do
 
   def get_group(path_info) do
     case path_info do
-      ["api", "user", _, group]    -> group
-      ["api", "group", group]      -> group
-      ["api", "group", group, _]   -> group
-      ["api", _, _, group]         -> group
+      ["api", "user", _, group] -> group
+      ["api", "group", group] -> group
+      ["api", "group", group, _] -> group
+      ["api", _, _, group] -> group
       _ -> "pls"
     end
   end
@@ -77,15 +77,15 @@ defmodule Pls.Auth do
   def get_user(token, %{login_host: login_host, login_api_key: api_key}) do
     url = "https://#{login_host}/verify/" <> token
     res = get!(url, [], params: %{api_key: api_key, format: "json"})
-    
+
     # Debug
-    IO.puts "https://#{login_host}/verify/.../?api_key=#{api_key}"
-    IO.puts "#{res.status_code}"
-    IO.puts "#{res.body}"
+    IO.puts("https://#{login_host}/verify/.../?api_key=#{api_key}")
+    IO.puts("#{res.status_code}")
+    IO.puts("#{res.body}")
 
     case Poison.decode(res.body) do
       {:ok, json} -> {:ok, json["user"]}
-      _           -> {:error, :invalid_token}
+      _ -> {:error, :invalid_token}
     end
   end
 
@@ -95,13 +95,11 @@ defmodule Pls.Auth do
 
   def check_group({:ok, user}, group) do
     if Pls.Queries.User.user(user, "pls", group) or
-      Pls.Queries.User.user(user, "pls", "pls") do
-        {:ok, user}
-      else
-        IO.puts "unauthorized"
-        {:error, :unauthorized}
-      end
+         Pls.Queries.User.user(user, "pls", "pls") do
+      {:ok, user}
+    else
+      IO.puts("unauthorized")
+      {:error, :unauthorized}
+    end
   end
-
-
 end

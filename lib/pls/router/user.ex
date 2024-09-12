@@ -10,32 +10,32 @@ defmodule Pls.Router.User do
   end
 
   get "/:uid" do
-    conn |> to_json(Pls.Queries.User.user uid)
+    conn |> to_json(Pls.Queries.User.user(uid))
   end
 
   get "/:uid/:system" do
-    conn |> to_json(Pls.Queries.User.user uid, system)
+    conn |> to_json(Pls.Queries.User.user(uid, system))
   end
 
   get "/:uid/:system/:permission" do
-    conn |> to_json(Pls.Queries.User.user uid, system, permission)
+    conn |> to_json(Pls.Queries.User.user(uid, system, permission))
   end
 
   post "/:uid/:group" do
-    case Ecto.Date.cast Map.get(conn.params, "expiry") do
+    case Date.from_iso8601(Map.get(conn.params, "expiry")) do
       {:ok, expiry} ->
-        conn |> to_json(Pls.Queries.User.add_membership(uid, URI.decode(group), expiry))
-      :error ->
-        conn |> send_resp(400, "Missing or invalid expiry")  
+        to_json(conn, Pls.Queries.User.add_membership(uid, URI.decode(group), expiry))
+
+      {:error, _err} ->
+        send_resp(conn, 400, "Missing or invalid expiry")
     end
   end
 
   delete "/:uid/:group" do
-    conn |> to_json(Pls.Queries.User.delete_membership uid, group)
+    to_json(conn, Pls.Queries.User.delete_membership(uid, group))
   end
 
   get _ do
-    conn |> send_resp(404, "Not found")
+    send_resp(conn, 404, "Not found")
   end
-
 end

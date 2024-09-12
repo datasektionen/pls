@@ -1,14 +1,13 @@
 defmodule Pls.Router do
+  alias DBConnection.App
   use Plug.Router
 
-  if Mix.env == :dev do
+  if Mix.env() == :dev do
     use Plug.Debugger, otp_app: :pls
-  else
-    plug Plug.SSL, rewrite_on: [:x_forwarded_proto]
   end
 
   plug Plug.Logger
-  plug Plug.Static, at: "/", from: "static/"
+  plug Plug.Static, at: "/", from: {:pls, "priv/static"}
 
   plug :match
 
@@ -34,13 +33,14 @@ defmodule Pls.Router do
     host = conn |> get_req_header("host")
     callback = URI.encode_www_form("#{conn.scheme}://#{host}/?token=")
     login_host = Application.get_env(:pls, :login_host)
-    url  = "https://#{login_host}/login?callback=#{callback}"
+    url = "https://#{login_host}/login?callback=#{callback}"
     token = Plug.Conn.fetch_cookies(conn) |> Map.from_struct() |> get_in([:cookies, "token"])
-  
+
     # If has cookie token or token in url
-    if token != nil or (conn.params |> Map.has_key?("token")) do
-      conn |> send_file(200, "static/index.html")
-    else # redirect to login
+    # redirect to login
+    if token != nil or conn.params |> Map.has_key?("token") do
+      conn |> send_file(200, Application.app_dir(:pls) <> "/priv/static/index.html")
+    else
       conn |> put_resp_header("location", url) |> send_resp(302, "")
     end
   end

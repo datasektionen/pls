@@ -13,8 +13,8 @@ defmodule Pls.Repo.Token do
   end
 
   def new(group_name, tag, token) do
-    group = Pls.Repo.one from(g in Pls.Repo.Group, where: g.name == ^group_name)
-    group = group || Pls.Queries.Group.add_group group_name
+    group = Pls.Repo.one(from(g in Pls.Repo.Group, where: g.name == ^group_name))
+    group = group || Pls.Queries.Group.add_group(group_name)
 
     Ecto.build_assoc(group, :tokens)
     |> cast(%{tag: tag, token: token}, [:tag, :token])
@@ -22,6 +22,6 @@ defmodule Pls.Repo.Token do
   end
 
   def accessed(token) do
-    cast(token, %{accessed: DateTime.utc_now}, [:accessed])
+    cast(token, %{accessed: DateTime.utc_now()}, [:accessed])
   end
 end

@@ -6,7 +6,7 @@ defmodule Pls.Repo.Group do
   schema "group" do
     field :name, :string
 
-    #many_to_many :members, Pls.Repo.User, join_through: Pls.Repo.Membership, on_delete: :delete_all
+    # many_to_many :members, Pls.Repo.User, join_through: Pls.Repo.Membership, on_delete: :delete_all
 
     has_many :permissions, Pls.Repo.Permission, on_delete: :delete_all
     has_many :memberships, Pls.Repo.Membership, on_delete: :delete_all

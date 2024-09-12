@@ -10,23 +10,22 @@ defmodule Pls.Router.Mandate do
   end
 
   get "/:mandate" do
-    conn |> to_json(Pls.Queries.Mandate.mandate mandate)
+    conn |> to_json(Pls.Queries.Mandate.mandate(mandate))
   end
 
   get "/:mandate/:group" do
-    conn |> to_json(Pls.Queries.Mandate.mandate mandate, group)
+    conn |> to_json(Pls.Queries.Mandate.mandate(mandate, group))
   end
 
   post "/:mandate/:group" do
-    conn |> to_json(Pls.Queries.Mandate.add_mandate URI.decode(mandate), URI.decode(group))
+    conn |> to_json(Pls.Queries.Mandate.add_mandate(URI.decode(mandate), URI.decode(group)))
   end
 
   delete "/:mandate/:group" do
-    conn |> to_json(Pls.Queries.Mandate.delete_mandate mandate, group)
+    conn |> to_json(Pls.Queries.Mandate.delete_mandate(mandate, group))
   end
 
   get _ do
     conn |> send_resp(404, "Not found")
   end
-
 end

@@ -10,27 +10,26 @@ defmodule Pls.Router.Token do
   end
 
   get "/:token" do
-    conn |> to_json(Pls.Queries.Token.get_token token)
+    conn |> to_json(Pls.Queries.Token.get_token(token))
   end
 
   get "/:token/:system" do
-    conn |> to_json(Pls.Queries.Token.get_token token, system)
+    conn |> to_json(Pls.Queries.Token.get_token(token, system))
   end
 
   get "/:token/:system/:permission" do
-    conn |> to_json(Pls.Queries.Token.get_token token, system, permission)
+    conn |> to_json(Pls.Queries.Token.get_token(token, system, permission))
   end
 
   post "/:tag/:group" do
-    conn |> to_json(Pls.Queries.Token.add_token URI.decode(tag), URI.decode(group))
+    conn |> to_json(Pls.Queries.Token.add_token(URI.decode(tag), URI.decode(group)))
   end
 
   delete "/:tag/:group" do
-    conn |> to_json(Pls.Queries.Token.delete_token tag, group)
+    conn |> to_json(Pls.Queries.Token.delete_token(tag, group))
   end
 
   get _ do
     conn |> send_resp(404, "Not found")
   end
-
 end
