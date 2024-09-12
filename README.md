@@ -3,32 +3,36 @@
 ## Database
 
 To initialize the database run the mix tasks
+
 ```bash
 mix ecto.create
 mix ecto.migrate
 ```
 
+## Server
+
+To start the server run
+
+```bash
+mix run --no-halt
+```
+
 To enter an interactive elixir shell and start the server run
+
 ```bash
 iex -S mix
 ```
 
-To enter en iteractive elixir shell when a server is already running run
-```bash
-iex -S mix pls
-```
-
-
 From there you can use the methods defined in Pls.Queries to edit the database. Most likely you would want to add these as a default, so that you can later use the frontend to make changes.
 
-```bash
-Pls.Queries.Group.add_permission "pls", "pls"
-Pls.Queries.Mandate.add_mandate "d-sys@d.kth.se", "pls"
+```elixir
+Pls.Queries.Group.add_permission("pls", "pls")
+Pls.Queries.User.add_membership("<kth-id>", "pls", "2050-01-01")
+Pls.Queries.Mandate.add_mandate("d-sys@d.kth.se", "pls")
 ```
 
-If you already have a server running you can run `iex -S mix pls` to open an interactive shell without starting another server.
-
 ## Endpoints
+
 POST/DELETE always requires a valid login token
 
 ```
