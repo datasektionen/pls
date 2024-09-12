@@ -16,7 +16,6 @@ defmodule Pls.Repo.Membership do
     group = Pls.Repo.one(from(g in Pls.Repo.Group, where: g.name == ^group_name))
     group = group || Pls.Queries.Group.add_group(group_name)
 
-
     Ecto.build_assoc(group, :memberships)
     |> cast(%{uid: uid, expiry: expiry}, [:uid, :expiry])
     |> unique_constraint(:membership, name: :membership_uid_group_id_index)

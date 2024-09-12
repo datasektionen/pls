@@ -10,7 +10,6 @@ if config_env() == :prod do
 
   port = System.get_env("PORT") || raise "PORT is missing"
 
-
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
   config :pls, Pls.Repo,
