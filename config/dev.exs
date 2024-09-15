@@ -2,7 +2,8 @@ import Config
 
 config :pls,
   login_api_key: System.get_env("LOGIN_API_KEY"),
-  login_host: System.get_env("LOGIN_HOST"),
+  login_api_url: System.get_env("LOGIN_API_URL"),
+  login_frontend_url: System.get_env("LOGIN_FRONTEND_URL"),
   port: System.get_env("PORT") || 4000
 
 config :pls, Pls.Repo,

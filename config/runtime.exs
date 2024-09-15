@@ -19,11 +19,13 @@ if config_env() == :prod do
     socket_options: maybe_ipv6
 
   login_api_key = System.get_env("LOGIN_API_KEY") || raise "LOGIN_API_KEY is missing"
-  login_host = System.get_env("LOGIN_HOST") || raise "LOGIN_HOST is missing"
+  login_api_url = System.get_env("LOGIN_API_URL") || raise "LOGIN_API_URL is missing"
+  login_frontend_url = System.get_env("LOGIN_FRONTEND_URL") || raise "LOGIN_FRONTEND_URL is missing"
 
   config :pls,
     login_api_key: login_api_key,
-    login_host: login_host,
+    login_api_url: login_api_url,
+    login_frontend_url: login_frontend_url,
     port: port
 
   # Honestly I don't know if this does anything

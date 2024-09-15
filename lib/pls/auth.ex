@@ -10,18 +10,18 @@ defmodule Pls.Auth do
       (IO.ANSI.red() <> "Every request made will be allowed!") |> IO.puts()
     end
 
-    host = Keyword.get(options, :login_host)
+    api_url = Keyword.get(options, :login_api_url)
 
-    if host == nil do
-      (IO.ANSI.red() <> "Environment variable LOGIN_HOST is missing") |> IO.puts()
+    if api_url == nil do
+      (IO.ANSI.red() <> "Environment variable LOGIN_API_URL is missing") |> IO.puts()
       (IO.ANSI.red() <> "Every request made will be allowed!") |> IO.puts()
     end
 
     Map.new(options)
   end
 
-  def call(conn, %{login_api_key: api_key, login_host: host})
-      when api_key == nil or host == nil do
+  def call(conn, %{login_api_key: api_key, login_api_url: api_url})
+      when api_key == nil or api_url == nil do
     assign(conn, :user, :developer)
   end
 
@@ -74,12 +74,12 @@ defmodule Pls.Auth do
     {:error, :missing_token}
   end
 
-  def get_user(token, %{login_host: login_host, login_api_key: api_key}) do
-    url = "https://#{login_host}/verify/" <> token
+  def get_user(token, %{login_api_url: login_api_url, login_api_key: api_key}) do
+    url = "#{login_api_url}/verify/" <> token
     res = get!(url, [], params: %{api_key: api_key, format: "json"})
 
     # Debug
-    IO.puts("https://#{login_host}/verify/.../?api_key=#{api_key}")
+    IO.puts("#{login_api_url}/verify/.../?api_key=#{api_key}")
     IO.puts("#{res.status_code}")
     IO.puts("#{res.body}")
 

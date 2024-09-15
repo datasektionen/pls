@@ -20,7 +20,7 @@ defmodule Pls.Router do
 
   plug Pls.Auth,
     login_api_key: Application.get_env(:pls, :login_api_key),
-    login_host: Application.get_env(:pls, :login_host)
+    login_api_url: Application.get_env(:pls, :login_api_url)
 
   plug :dispatch
 
@@ -32,8 +32,8 @@ defmodule Pls.Router do
   get "/" do
     host = conn |> get_req_header("host")
     callback = URI.encode_www_form("#{conn.scheme}://#{host}/?token=")
-    login_host = Application.get_env(:pls, :login_host)
-    url = "https://#{login_host}/login?callback=#{callback}"
+    login_url = Application.get_env(:pls, :login_frontend_url)
+    url = "#{login_url}/login?callback=#{callback}"
     token = Plug.Conn.fetch_cookies(conn) |> Map.from_struct() |> get_in([:cookies, "token"])
 
     # If has cookie token or token in url
