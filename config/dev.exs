@@ -6,11 +6,11 @@ config :pls,
   login_frontend_url: System.get_env("LOGIN_FRONTEND_URL"),
   port: System.get_env("PORT") || 4000
 
+database_url = System.get_env("DATABASE_URL", "ecto://postgres:postgres@localhost/pls_dev")
+
 config :pls, Pls.Repo,
   adapter: Ecto.Adapters.Postgres,
-  database: "pls_dev",
-  username: "postgres",
-  password: "postgres",
+  url: database_url,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,

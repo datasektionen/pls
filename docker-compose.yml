@@ -12,7 +12,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: "bash -c '/app/bin/migrate && /app/bin/server'"
+    volumes:
+      - .:/app
+    command: "bash -c 'mix ecto.create && \
+      mix ecto.migrate && \
+      mix run priv/repo/seeds.exs && \
+      mix run --no-halt'"
   db:
     image: postgres:latest
     environment:

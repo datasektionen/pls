@@ -20,7 +20,9 @@ if config_env() == :prod do
 
   login_api_key = System.get_env("LOGIN_API_KEY") || raise "LOGIN_API_KEY is missing"
   login_api_url = System.get_env("LOGIN_API_URL") || raise "LOGIN_API_URL is missing"
-  login_frontend_url = System.get_env("LOGIN_FRONTEND_URL") || raise "LOGIN_FRONTEND_URL is missing"
+
+  login_frontend_url =
+    System.get_env("LOGIN_FRONTEND_URL") || raise "LOGIN_FRONTEND_URL is missing"
 
   config :pls,
     login_api_key: login_api_key,
