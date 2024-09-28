@@ -1,5 +1,4 @@
 defmodule Pls.Router do
-  alias DBConnection.App
   use Plug.Router
 
   if Mix.env() == :dev do
@@ -18,10 +17,7 @@ defmodule Pls.Router do
 
   plug CORSPlug
 
-  plug Pls.Auth,
-    login_api_key: Application.get_env(:pls, :login_api_key),
-    login_api_url: Application.get_env(:pls, :login_api_url)
-
+  plug Pls.Auth
   plug :dispatch
 
   forward "/api/user", to: Pls.Router.User
@@ -38,7 +34,7 @@ defmodule Pls.Router do
 
     # If has cookie token or token in url
     # redirect to login
-    if token != nil or conn.params |> Map.has_key?("token") do
+    if token != nil or Map.has_key?(conn.params, "token") do
       conn |> send_file(200, Application.app_dir(:pls) <> "/priv/static/index.html")
     else
       conn |> put_resp_header("location", url) |> send_resp(302, "")

@@ -35,7 +35,7 @@ defmodule Pls.Router.User do
     to_json(conn, Pls.Queries.User.delete_membership(uid, group))
   end
 
-  get _ do
-    send_resp(conn, 404, "Not found")
+  match _ do
+    send_resp(conn, 404, "Not found, or invalid user name")
   end
 end

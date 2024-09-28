@@ -30,10 +30,17 @@ defmodule Pls.Router.Group do
   end
 
   post "/:group/:permission" do
-    conn |> to_json(Pls.Queries.Group.add_permission(URI.decode(group), URI.decode(permission)))
+    group = URI.decode(group)
+    permission = URI.decode(permission)
+
+    conn |> to_json(Pls.Queries.Group.add_permission(group, permission))
   end
 
   delete "/:group/:permission" do
     conn |> to_json(Pls.Queries.Group.delete_permission(group, permission))
+  end
+
+  match _ do
+    send_resp(conn, 404, "Not found, or invalid group name")
   end
 end

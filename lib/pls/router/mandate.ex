@@ -25,7 +25,7 @@ defmodule Pls.Router.Mandate do
     conn |> to_json(Pls.Queries.Mandate.delete_mandate(mandate, group))
   end
 
-  get _ do
-    conn |> send_resp(404, "Not found")
+  match _ do
+    conn |> send_resp(404, "Not found, or invalid mandate name")
   end
 end

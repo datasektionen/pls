@@ -29,7 +29,7 @@ defmodule Pls.Router.Token do
     conn |> to_json(Pls.Queries.Token.delete_token(tag, group))
   end
 
-  get _ do
-    conn |> send_resp(404, "Not found")
+  match _ do
+    conn |> send_resp(404, "Not found, or invalid token name")
   end
 end

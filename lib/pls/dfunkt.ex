@@ -10,6 +10,6 @@ defmodule Pls.Dfunkt do
         {:error, _} -> %{"mandates" => []}
       end
 
-    json["mandates"] |> Enum.map(& &1["Role"]["email"])
+    Enum.map(json["mandates"], & &1["Role"]["email"])
   end
 end
