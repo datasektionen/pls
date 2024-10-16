@@ -10,7 +10,7 @@ RUN mix local.hex --force
 RUN mix local.rebar --force
 
 # App Directory
-ENV APP_HOME /app
+ENV APP_HOME=/app
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
