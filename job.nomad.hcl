@@ -12,13 +12,13 @@ job "pls" {
       port     = "http"
       provider = "nomad"
       tags = [
-        "traefik-external.enable=true",
-        "traefik-external.http.routers.pls.rule=Host(`pls.datasektionen.se`)",
-        "traefik-external.http.routers.pls.entrypoints=websecure",
-        "traefik-external.http.routers.pls.tls.certresolver=default",
+        "traefik.enable=true",
+        "traefik.http.routers.pls.rule=Host(`pls.datasektionen.se`)",
+        "traefik.http.routers.pls.tls.certresolver=default",
 
-        "traefik-internal.enable=true",
-        "traefik-internal.http.routers.pls.rule=Host(`pls.nomad.dsekt.internal`)",
+        "traefik.enable=true",
+        "traefik.http.routers.pls-internal.rule=Host(`pls.nomad.dsekt.internal`)",
+        "traefik.http.routers.pls-internal.entrypoints=web-internal",
       ]
     }
 
