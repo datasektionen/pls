@@ -1,5 +1,6 @@
 job "pls" {
   type = "service"
+  namespace = "auth"
 
   group "pls" {
     network {

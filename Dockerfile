@@ -89,7 +89,7 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
-CMD "bash -c '/app/bin/migrate && /app/bin/server'"
+CMD ["bash", "-c", "/app/bin/migrate && /app/bin/server"]
 
 # When starting in prod, do something like this:
 # "bash -c '/app/bin/migrate && /app/bin/server'"
