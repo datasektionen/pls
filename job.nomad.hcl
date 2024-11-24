@@ -16,7 +16,6 @@ job "pls" {
         "traefik.http.routers.pls.rule=Host(`pls.datasektionen.se`)",
         "traefik.http.routers.pls.tls.certresolver=default",
 
-        "traefik.enable=true",
         "traefik.http.routers.pls-internal.rule=Host(`pls.nomad.dsekt.internal`)",
         "traefik.http.routers.pls-internal.entrypoints=web-internal",
       ]
