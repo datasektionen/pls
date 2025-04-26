@@ -3,26 +3,23 @@ defmodule Pls.Router.Mandate do
   plug :match
   plug :dispatch
 
-  def to_json(conn, data) do
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode!(data))
-  end
+  import Pls.Router.Helpers
 
   get "/:mandate" do
-    conn |> to_json(Pls.Queries.Mandate.mandate(mandate))
+    conn |> send_api_result(Pls.Queries.Mandate.mandate(mandate))
   end
 
   get "/:mandate/:group" do
-    conn |> to_json(Pls.Queries.Mandate.mandate(mandate, group))
+    conn |> send_api_result(Pls.Queries.Mandate.mandate(mandate, group))
   end
 
   post "/:mandate/:group" do
-    conn |> to_json(Pls.Queries.Mandate.add_mandate(URI.decode(mandate), URI.decode(group)))
+    conn
+    |> send_api_result(Pls.Queries.Mandate.add_mandate(URI.decode(mandate), URI.decode(group)))
   end
 
   delete "/:mandate/:group" do
-    conn |> to_json(Pls.Queries.Mandate.delete_mandate(mandate, group))
+    conn |> send_api_result(Pls.Queries.Mandate.delete_mandate(mandate, group))
   end
 
   match _ do

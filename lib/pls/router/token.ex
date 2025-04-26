@@ -3,30 +3,26 @@ defmodule Pls.Router.Token do
   plug :match
   plug :dispatch
 
-  def to_json(conn, data) do
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode!(data))
-  end
+  import Pls.Router.Helpers
 
   get "/:token" do
-    conn |> to_json(Pls.Queries.Token.get_token(token))
+    conn |> send_api_result(Pls.Queries.Token.get_token(token))
   end
 
   get "/:token/:system" do
-    conn |> to_json(Pls.Queries.Token.get_token(token, system))
+    conn |> send_api_result(Pls.Queries.Token.get_token(token, system))
   end
 
   get "/:token/:system/:permission" do
-    conn |> to_json(Pls.Queries.Token.get_token(token, system, permission))
+    conn |> send_api_result(Pls.Queries.Token.get_token(token, system, permission))
   end
 
   post "/:tag/:group" do
-    conn |> to_json(Pls.Queries.Token.add_token(URI.decode(tag), URI.decode(group)))
+    conn |> send_api_result(Pls.Queries.Token.add_token(URI.decode(tag), URI.decode(group)))
   end
 
   delete "/:tag/:group" do
-    conn |> to_json(Pls.Queries.Token.delete_token(tag, group))
+    conn |> send_api_result(Pls.Queries.Token.delete_token(tag, group))
   end
 
   match _ do

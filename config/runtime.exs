@@ -21,16 +21,29 @@ if config_env() == :prod do
   login_api_key = System.get_env("LOGIN_API_KEY") || raise "LOGIN_API_KEY is missing"
   login_api_url = System.get_env("LOGIN_API_URL") || raise "LOGIN_API_URL is missing"
 
+  endpoint = System.get_env("ENDPOINT") || raise "ENDPOINT is missing"
+
   login_frontend_url =
     System.get_env("LOGIN_FRONTEND_URL") || raise "LOGIN_FRONTEND_URL is missing"
+
+  pem_cert = System.get_env("PEM_CERT") || raise "PEM_CERT is missing"
 
   config :pls,
     login_api_key: login_api_key,
     login_api_url: login_api_url,
     login_frontend_url: login_frontend_url,
+    endpoint: endpoint,
     port: port
 
+  config :joken,
+    default_key: [
+      signer_alg: "RS256",
+      key_pem: pem_cert |> Base.decode64!()
+    ]
+
   # Honestly I don't know if this does anything
+  #
+  # spoiler: it does not
   config :pls, Pls.Router,
     http: [
       # Enable IPv6 and bind on all interfaces.

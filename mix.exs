@@ -28,7 +28,8 @@ defmodule Pls.Mixfile do
       {:httpoison, "~> 2.2"},
       {:poison, "~> 6.0"},
       {:cors_plug, "~> 3.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:joken, "~> 2.6"}
     ]
   end
 end

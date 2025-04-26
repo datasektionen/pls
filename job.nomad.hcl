@@ -35,7 +35,9 @@ PORT={{ env "NOMAD_PORT_http" }}
 {{ with nomadVar "nomad/jobs/pls" }}
 DATABASE_URL=postgres://pls:{{ .database_password }}@postgres.dsekt.internal:5432/pls
 LOGIN_API_KEY={{ .login_api_key }}
+PEM_CERT={{ .pls_pem_cert }}
 {{ end }}
+ENDPOINT=https://pls.datasektionen.se
 LOGIN_API_URL=http://sso.nomad.dsekt.internal/legacyapi
 LOGIN_FRONTEND_URL=https://sso.datasektionen.se/legacyapi
 ENV
