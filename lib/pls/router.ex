@@ -7,6 +7,7 @@ defmodule Pls.Router do
 
   plug Plug.Logger
   plug Plug.Static, at: "/", from: {:pls, "priv/static"}
+  plug Pls.StripJWTPrefix
 
   plug :match
 
@@ -25,9 +26,11 @@ defmodule Pls.Router do
   forward "/api/mandate", to: Pls.Router.Mandate
   forward "/api/token", to: Pls.Router.Token
 
+  get "/.well-known/jwks.json", to: Pls.Jwt.Jwks
+  get "/.well-known/openid-configuration", to: Pls.Jwt.OpenId
+
   get "/" do
-    host = conn |> get_req_header("host")
-    callback = URI.encode_www_form("#{conn.scheme}://#{host}/?token=")
+    callback = URI.encode_www_form("#{Application.get_env(:pls, :endpoint)}/?token=")
     login_url = Application.get_env(:pls, :login_frontend_url)
     url = "#{login_url}/login?callback=#{callback}"
     token = Plug.Conn.fetch_cookies(conn) |> Map.from_struct() |> get_in([:cookies, "token"])
